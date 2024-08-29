@@ -9,7 +9,9 @@ import Foundation
 import UIKit
 
 final class TrackersViewController: UIViewController {
-
+    
+    var categories: [TrackerCategory]?
+    var complitedTrackers: [TrackerRecord]?
 
     //MARK: - UI Elements
     private let placeholderImage: UIImageView = {
@@ -88,7 +90,7 @@ extension TrackersViewController {
     }
 
     @objc private func addButtonTapped() {
-        print("Add button tapped")
+        print("Custom button tapped")
     }
 
     private func setupConstraints() {

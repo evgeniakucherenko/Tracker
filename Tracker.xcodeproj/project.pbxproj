@@ -17,6 +17,9 @@
 		621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB0E2C7C9C99003804AE /* TabBarController.swift */; };
 		621FDB112C7C9D54003804AE /* StatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB102C7C9D54003804AE /* StatViewController.swift */; };
 		621FDB152C7DB6F6003804AE /* LaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB142C7DB6F6003804AE /* LaunchViewController.swift */; };
+		621FDB182C80BB4B003804AE /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB172C80BB4B003804AE /* Tracker.swift */; };
+		621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB1A2C80BB68003804AE /* TrackerCategory.swift */; };
+		621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB1C2C80BB76003804AE /* TrackerRecord.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +54,9 @@
 		621FDB0E2C7C9C99003804AE /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		621FDB102C7C9D54003804AE /* StatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatViewController.swift; sourceTree = "<group>"; };
 		621FDB142C7DB6F6003804AE /* LaunchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchViewController.swift; sourceTree = "<group>"; };
+		621FDB172C80BB4B003804AE /* Tracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracker.swift; sourceTree = "<group>"; };
+		621FDB1A2C80BB68003804AE /* TrackerCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategory.swift; sourceTree = "<group>"; };
+		621FDB1C2C80BB76003804AE /* TrackerRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecord.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,8 +107,8 @@
 		621FDADD2C7B520D003804AE /* Tracker */ = {
 			isa = PBXGroup;
 			children = (
-				621FDAE22C7B520D003804AE /* TrackersViewController.swift */,
-				621FDB102C7C9D54003804AE /* StatViewController.swift */,
+				621FDB1E2C80BE71003804AE /* Trackers */,
+				621FDB162C80BB36003804AE /* Models */,
 				621FDB0E2C7C9C99003804AE /* TabBarController.swift */,
 				621FDB142C7DB6F6003804AE /* LaunchViewController.swift */,
 				621FDADE2C7B520D003804AE /* AppDelegate.swift */,
@@ -128,6 +134,25 @@
 				621FDB012C7B520F003804AE /* TrackerUITestsLaunchTests.swift */,
 			);
 			path = TrackerUITests;
+			sourceTree = "<group>";
+		};
+		621FDB162C80BB36003804AE /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				621FDB172C80BB4B003804AE /* Tracker.swift */,
+				621FDB1A2C80BB68003804AE /* TrackerCategory.swift */,
+				621FDB1C2C80BB76003804AE /* TrackerRecord.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		621FDB1E2C80BE71003804AE /* Trackers */ = {
+			isa = PBXGroup;
+			children = (
+				621FDAE22C7B520D003804AE /* TrackersViewController.swift */,
+				621FDB102C7C9D54003804AE /* StatViewController.swift */,
+			);
+			path = Trackers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -261,10 +286,13 @@
 			files = (
 				621FDAE32C7B520D003804AE /* TrackersViewController.swift in Sources */,
 				621FDB152C7DB6F6003804AE /* LaunchViewController.swift in Sources */,
+				621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */,
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,
 				621FDADF2C7B520D003804AE /* AppDelegate.swift in Sources */,
+				621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */,
 				621FDB112C7C9D54003804AE /* StatViewController.swift in Sources */,
 				621FDAE12C7B520D003804AE /* SceneDelegate.swift in Sources */,
+				621FDB182C80BB4B003804AE /* Tracker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
