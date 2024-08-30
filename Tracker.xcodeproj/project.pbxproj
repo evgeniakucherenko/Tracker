@@ -20,6 +20,12 @@
 		621FDB182C80BB4B003804AE /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB172C80BB4B003804AE /* Tracker.swift */; };
 		621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB1A2C80BB68003804AE /* TrackerCategory.swift */; };
 		621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB1C2C80BB76003804AE /* TrackerRecord.swift */; };
+		621FDB202C80C609003804AE /* CreateTrackerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB1F2C80C609003804AE /* CreateTrackerController.swift */; };
+		621FDB222C80CA3D003804AE /* СustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB212C80CA3D003804AE /* СustomButton.swift */; };
+		621FDB272C80DEA6003804AE /* CreateHabitsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB262C80DEA6003804AE /* CreateHabitsController.swift */; };
+		621FDB292C80E425003804AE /* TitlePopup .swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB282C80E425003804AE /* TitlePopup .swift */; };
+		621FDB2B2C80EE3E003804AE /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB2A2C80EE3E003804AE /* CustomTextField.swift */; };
+		621FDB2D2C81D5EA003804AE /* CustomSelectionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB2C2C81D5EA003804AE /* CustomSelectionButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +63,12 @@
 		621FDB172C80BB4B003804AE /* Tracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracker.swift; sourceTree = "<group>"; };
 		621FDB1A2C80BB68003804AE /* TrackerCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategory.swift; sourceTree = "<group>"; };
 		621FDB1C2C80BB76003804AE /* TrackerRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecord.swift; sourceTree = "<group>"; };
+		621FDB1F2C80C609003804AE /* CreateTrackerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTrackerController.swift; sourceTree = "<group>"; };
+		621FDB212C80CA3D003804AE /* СustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "СustomButton.swift"; sourceTree = "<group>"; };
+		621FDB262C80DEA6003804AE /* CreateHabitsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateHabitsController.swift; sourceTree = "<group>"; };
+		621FDB282C80E425003804AE /* TitlePopup .swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TitlePopup .swift"; sourceTree = "<group>"; };
+		621FDB2A2C80EE3E003804AE /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
+		621FDB2C2C81D5EA003804AE /* CustomSelectionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSelectionButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,8 +121,9 @@
 			children = (
 				621FDB1E2C80BE71003804AE /* Trackers */,
 				621FDB162C80BB36003804AE /* Models */,
-				621FDB0E2C7C9C99003804AE /* TabBarController.swift */,
-				621FDB142C7DB6F6003804AE /* LaunchViewController.swift */,
+				621FDB242C80DA01003804AE /* Navigation */,
+				621FDB252C80DA63003804AE /* Onboarding */,
+				621FDB232C80CB89003804AE /* UI-Elements */,
 				621FDADE2C7B520D003804AE /* AppDelegate.swift */,
 				621FDAE02C7B520D003804AE /* SceneDelegate.swift */,
 				621FDAE72C7B520F003804AE /* Assets.xcassets */,
@@ -151,8 +164,37 @@
 			children = (
 				621FDAE22C7B520D003804AE /* TrackersViewController.swift */,
 				621FDB102C7C9D54003804AE /* StatViewController.swift */,
+				621FDB1F2C80C609003804AE /* CreateTrackerController.swift */,
+				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
 			);
 			path = Trackers;
+			sourceTree = "<group>";
+		};
+		621FDB232C80CB89003804AE /* UI-Elements */ = {
+			isa = PBXGroup;
+			children = (
+				621FDB212C80CA3D003804AE /* СustomButton.swift */,
+				621FDB282C80E425003804AE /* TitlePopup .swift */,
+				621FDB2A2C80EE3E003804AE /* CustomTextField.swift */,
+				621FDB2C2C81D5EA003804AE /* CustomSelectionButton.swift */,
+			);
+			path = "UI-Elements";
+			sourceTree = "<group>";
+		};
+		621FDB242C80DA01003804AE /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				621FDB0E2C7C9C99003804AE /* TabBarController.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		621FDB252C80DA63003804AE /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				621FDB142C7DB6F6003804AE /* LaunchViewController.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -284,13 +326,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				621FDB2B2C80EE3E003804AE /* CustomTextField.swift in Sources */,
 				621FDAE32C7B520D003804AE /* TrackersViewController.swift in Sources */,
+				621FDB272C80DEA6003804AE /* CreateHabitsController.swift in Sources */,
 				621FDB152C7DB6F6003804AE /* LaunchViewController.swift in Sources */,
 				621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */,
+				621FDB222C80CA3D003804AE /* СustomButton.swift in Sources */,
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,
 				621FDADF2C7B520D003804AE /* AppDelegate.swift in Sources */,
 				621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */,
+				621FDB202C80C609003804AE /* CreateTrackerController.swift in Sources */,
+				621FDB292C80E425003804AE /* TitlePopup .swift in Sources */,
 				621FDB112C7C9D54003804AE /* StatViewController.swift in Sources */,
+				621FDB2D2C81D5EA003804AE /* CustomSelectionButton.swift in Sources */,
 				621FDAE12C7B520D003804AE /* SceneDelegate.swift in Sources */,
 				621FDB182C80BB4B003804AE /* Tracker.swift in Sources */,
 			);

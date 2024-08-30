@@ -90,7 +90,10 @@ extension TrackersViewController {
     }
 
     @objc private func addButtonTapped() {
-        print("Custom button tapped")
+        let createTrackerController = CreateTrackerController()
+        let navController = UINavigationController(rootViewController: createTrackerController)
+        navController.modalPresentationStyle = .formSheet 
+        present(navController, animated: true, completion: nil)
     }
 
     private func setupConstraints() {

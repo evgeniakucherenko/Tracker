@@ -9,6 +9,8 @@ import Foundation
 import UIKit
 
 final class LaunchViewController: UIViewController {
+    
+    //MARK: - Lifycylce
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -16,6 +18,7 @@ final class LaunchViewController: UIViewController {
         setupConstraints()
     }
     
+    //MARK: - UI Elements
     private let logoImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = .logo
@@ -23,6 +26,7 @@ final class LaunchViewController: UIViewController {
         return imageView
     }()
     
+    // MARK: - Setup Methods
     private func setupConstraints() {
         view.addSubview(logoImage)
         

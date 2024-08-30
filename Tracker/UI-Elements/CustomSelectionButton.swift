@@ -1,0 +1,61 @@
+//
+//  CustomSelectionButton.swift
+//  Tracker
+//
+//  Created by Evgenia Kucherenko on 30.08.2024.
+//
+
+import Foundation
+import UIKit
+
+class CustomSelectionButton: UIButton {
+    
+    private let customTitleLabel = UILabel()
+    private let arrowImageView = UIImageView()
+    
+    // MARK: - Initializers
+    init(title: String) {
+        super.init(frame: .zero)
+        configureButton(title: title)
+        setupConstraints()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - Setup Methods
+    private func configureButton(title: String) {
+        self.layer.cornerRadius = 16
+        self.layer.masksToBounds = true
+        self.backgroundColor = UIColor(named: "light_gray_YP")
+            
+        customTitleLabel.text = title
+        customTitleLabel.textColor = .blackYP
+        customTitleLabel.font = UIFont.systemFont(ofSize: 16)
+            
+        arrowImageView.image = UIImage(resource: .backIcon)
+        arrowImageView.tintColor = .grayColorYP
+            
+        self.addSubview(customTitleLabel)
+        self.addSubview(arrowImageView)
+    }
+    
+    // MARK: - Layout
+    private func setupConstraints() {
+        customTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        arrowImageView.translatesAutoresizingMaskIntoConstraints = false
+        self.translatesAutoresizingMaskIntoConstraints = false
+           
+        NSLayoutConstraint.activate([
+            customTitleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            customTitleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+               
+            arrowImageView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            arrowImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            
+            self.heightAnchor.constraint(equalToConstant: 60),
+            self.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40)
+        ])
+    }
+}
