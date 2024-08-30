@@ -41,7 +41,7 @@ class CustomTextField: UITextField {
                 .font: UIFont.systemFont(ofSize: 16)
             ]
         )
-                
+        
         self.textColor = .blackYP
         self.font = UIFont.systemFont(ofSize: 16)
     }

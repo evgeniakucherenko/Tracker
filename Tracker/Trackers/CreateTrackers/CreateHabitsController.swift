@@ -91,8 +91,10 @@ final class CreateHabitsController: UIViewController {
     
     // MARK: - Actions
     @objc private func categoryButtonTapped() {
-        print("Category button tapped")
-        // Переход на экран выбора категории
+        let categoryViewController = CategoryViewController()
+        let navController = UINavigationController(rootViewController: categoryViewController)
+        navController.modalPresentationStyle = .formSheet
+        present(navController, animated: true, completion: nil)
     }
        
     @objc private func scheduleButtonTapped() {

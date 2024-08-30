@@ -26,6 +26,8 @@
 		621FDB292C80E425003804AE /* TitlePopup .swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB282C80E425003804AE /* TitlePopup .swift */; };
 		621FDB2B2C80EE3E003804AE /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB2A2C80EE3E003804AE /* CustomTextField.swift */; };
 		621FDB2D2C81D5EA003804AE /* CustomSelectionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB2C2C81D5EA003804AE /* CustomSelectionButton.swift */; };
+		621FDB2F2C81E89D003804AE /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB2E2C81E89D003804AE /* CategoryViewController.swift */; };
+		621FDB312C81F1E8003804AE /* CreateCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +71,8 @@
 		621FDB282C80E425003804AE /* TitlePopup .swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TitlePopup .swift"; sourceTree = "<group>"; };
 		621FDB2A2C80EE3E003804AE /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
 		621FDB2C2C81D5EA003804AE /* CustomSelectionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSelectionButton.swift; sourceTree = "<group>"; };
+		621FDB2E2C81E89D003804AE /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
+		621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCategoryViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,8 +168,7 @@
 			children = (
 				621FDAE22C7B520D003804AE /* TrackersViewController.swift */,
 				621FDB102C7C9D54003804AE /* StatViewController.swift */,
-				621FDB1F2C80C609003804AE /* CreateTrackerController.swift */,
-				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
+				621FDB322C81F8A2003804AE /* CreateTrackers */,
 			);
 			path = Trackers;
 			sourceTree = "<group>";
@@ -195,6 +198,17 @@
 				621FDB142C7DB6F6003804AE /* LaunchViewController.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		621FDB322C81F8A2003804AE /* CreateTrackers */ = {
+			isa = PBXGroup;
+			children = (
+				621FDB1F2C80C609003804AE /* CreateTrackerController.swift */,
+				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
+				621FDB2E2C81E89D003804AE /* CategoryViewController.swift */,
+				621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */,
+			);
+			path = CreateTrackers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -330,11 +344,13 @@
 				621FDAE32C7B520D003804AE /* TrackersViewController.swift in Sources */,
 				621FDB272C80DEA6003804AE /* CreateHabitsController.swift in Sources */,
 				621FDB152C7DB6F6003804AE /* LaunchViewController.swift in Sources */,
+				621FDB2F2C81E89D003804AE /* CategoryViewController.swift in Sources */,
 				621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */,
 				621FDB222C80CA3D003804AE /* СustomButton.swift in Sources */,
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,
 				621FDADF2C7B520D003804AE /* AppDelegate.swift in Sources */,
 				621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */,
+				621FDB312C81F1E8003804AE /* CreateCategoryViewController.swift in Sources */,
 				621FDB202C80C609003804AE /* CreateTrackerController.swift in Sources */,
 				621FDB292C80E425003804AE /* TitlePopup .swift in Sources */,
 				621FDB112C7C9D54003804AE /* StatViewController.swift in Sources */,
