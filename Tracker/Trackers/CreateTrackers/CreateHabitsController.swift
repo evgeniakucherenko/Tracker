@@ -8,7 +8,10 @@
 import Foundation
 import UIKit
 
-final class CreateHabitsController: UIViewController {
+final class CreateHabitsController: UIViewController, 
+                                    ScheduleViewControllerDelegate {
+    
+    private var selectedDays: Set<Weekday> = []
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -89,6 +92,11 @@ final class CreateHabitsController: UIViewController {
         }
     }
     
+    func didSelect(days: Set<Weekday>) {
+        let selectedDaysText = days.map { $0.shortName }.joined(separator: ", ")
+        scheduleButton.update(title: "Расписание", subtitle: selectedDaysText)
+    }
+    
     // MARK: - Actions
     @objc private func categoryButtonTapped() {
         let categoryViewController = CategoryViewController()
@@ -98,8 +106,11 @@ final class CreateHabitsController: UIViewController {
     }
        
     @objc private func scheduleButtonTapped() {
-        print("Schedule button tapped")
-        // Переход на экран выбора расписания
+        let scheduleViewController = ScheduleViewController(selectedDays: selectedDays)
+        scheduleViewController.delegate = self
+        let navController = UINavigationController(rootViewController: scheduleViewController)
+        navController.modalPresentationStyle = .formSheet
+        present(navController, animated: true, completion: nil)
     }
 }
 
@@ -125,12 +136,12 @@ extension CreateHabitsController {
             categoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             categoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             categoryButton.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 24),
-            categoryButton.heightAnchor.constraint(equalToConstant: 60),
+            categoryButton.heightAnchor.constraint(equalToConstant: 75),
                         
             scheduleButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             scheduleButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             scheduleButton.topAnchor.constraint(equalTo: categoryButton.bottomAnchor, constant: 0),
-            scheduleButton.heightAnchor.constraint(equalToConstant: 60),
+            scheduleButton.heightAnchor.constraint(equalToConstant: 75),
             
             separatorLine.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
             separatorLine.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),

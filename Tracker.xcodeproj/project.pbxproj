@@ -28,6 +28,8 @@
 		621FDB2D2C81D5EA003804AE /* CustomSelectionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB2C2C81D5EA003804AE /* CustomSelectionButton.swift */; };
 		621FDB2F2C81E89D003804AE /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB2E2C81E89D003804AE /* CategoryViewController.swift */; };
 		621FDB312C81F1E8003804AE /* CreateCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */; };
+		621FDB342C81F9D6003804AE /* ScheduleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB332C81F9D6003804AE /* ScheduleViewController.swift */; };
+		621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB352C821D4A003804AE /* ScheduleCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +75,8 @@
 		621FDB2C2C81D5EA003804AE /* CustomSelectionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSelectionButton.swift; sourceTree = "<group>"; };
 		621FDB2E2C81E89D003804AE /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
 		621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCategoryViewController.swift; sourceTree = "<group>"; };
+		621FDB332C81F9D6003804AE /* ScheduleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewController.swift; sourceTree = "<group>"; };
+		621FDB352C821D4A003804AE /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -207,6 +211,8 @@
 				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
 				621FDB2E2C81E89D003804AE /* CategoryViewController.swift */,
 				621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */,
+				621FDB332C81F9D6003804AE /* ScheduleViewController.swift */,
+				621FDB352C821D4A003804AE /* ScheduleCell.swift */,
 			);
 			path = CreateTrackers;
 			sourceTree = "<group>";
@@ -343,6 +349,7 @@
 				621FDB2B2C80EE3E003804AE /* CustomTextField.swift in Sources */,
 				621FDAE32C7B520D003804AE /* TrackersViewController.swift in Sources */,
 				621FDB272C80DEA6003804AE /* CreateHabitsController.swift in Sources */,
+				621FDB342C81F9D6003804AE /* ScheduleViewController.swift in Sources */,
 				621FDB152C7DB6F6003804AE /* LaunchViewController.swift in Sources */,
 				621FDB2F2C81E89D003804AE /* CategoryViewController.swift in Sources */,
 				621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */,
@@ -355,6 +362,7 @@
 				621FDB292C80E425003804AE /* TitlePopup .swift in Sources */,
 				621FDB112C7C9D54003804AE /* StatViewController.swift in Sources */,
 				621FDB2D2C81D5EA003804AE /* CustomSelectionButton.swift in Sources */,
+				621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */,
 				621FDAE12C7B520D003804AE /* SceneDelegate.swift in Sources */,
 				621FDB182C80BB4B003804AE /* Tracker.swift in Sources */,
 			);
