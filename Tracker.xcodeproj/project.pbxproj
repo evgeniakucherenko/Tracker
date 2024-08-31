@@ -30,6 +30,7 @@
 		621FDB312C81F1E8003804AE /* CreateCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */; };
 		621FDB342C81F9D6003804AE /* ScheduleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB332C81F9D6003804AE /* ScheduleViewController.swift */; };
 		621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB352C821D4A003804AE /* ScheduleCell.swift */; };
+		621FDB382C82F9CB003804AE /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB372C82F9CB003804AE /* CategoryCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,6 +78,7 @@
 		621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCategoryViewController.swift; sourceTree = "<group>"; };
 		621FDB332C81F9D6003804AE /* ScheduleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewController.swift; sourceTree = "<group>"; };
 		621FDB352C821D4A003804AE /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
+		621FDB372C82F9CB003804AE /* CategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,12 +211,29 @@
 			children = (
 				621FDB1F2C80C609003804AE /* CreateTrackerController.swift */,
 				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
+				621FDB3A2C82FAC3003804AE /* Shedule */,
+				621FDB392C82FAAD003804AE /* Category */,
+			);
+			path = CreateTrackers;
+			sourceTree = "<group>";
+		};
+		621FDB392C82FAAD003804AE /* Category */ = {
+			isa = PBXGroup;
+			children = (
 				621FDB2E2C81E89D003804AE /* CategoryViewController.swift */,
 				621FDB302C81F1E8003804AE /* CreateCategoryViewController.swift */,
+				621FDB372C82F9CB003804AE /* CategoryCell.swift */,
+			);
+			path = Category;
+			sourceTree = "<group>";
+		};
+		621FDB3A2C82FAC3003804AE /* Shedule */ = {
+			isa = PBXGroup;
+			children = (
 				621FDB332C81F9D6003804AE /* ScheduleViewController.swift */,
 				621FDB352C821D4A003804AE /* ScheduleCell.swift */,
 			);
-			path = CreateTrackers;
+			path = Shedule;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -365,6 +384,7 @@
 				621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */,
 				621FDAE12C7B520D003804AE /* SceneDelegate.swift in Sources */,
 				621FDB182C80BB4B003804AE /* Tracker.swift in Sources */,
+				621FDB382C82F9CB003804AE /* CategoryCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

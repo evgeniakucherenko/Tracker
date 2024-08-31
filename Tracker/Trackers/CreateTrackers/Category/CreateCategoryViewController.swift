@@ -8,7 +8,13 @@
 import Foundation
 import UIKit
 
+protocol CategoryViewControllerDelegate: AnyObject {
+    func didCreateCategory(_ category: String)
+}
+
 final class CreateCategoryViewController: UIViewController, UITextFieldDelegate {
+    
+    weak var delegate: CategoryViewControllerDelegate?
     
     //MARK: - UI Elements
     private lazy var categoryTextField: CustomTextField = {
@@ -64,8 +70,14 @@ final class CreateCategoryViewController: UIViewController, UITextFieldDelegate 
     
     // MARK: - Actions
     @objc private func doneButtonTapped() {
-        // Переход
+        guard let categoryName = categoryTextField.text, !categoryName.isEmpty else {
+            return
+        }
+        delegate?.didCreateCategory(categoryName)
+        
+        dismiss(animated: true, completion: nil)
     }
+    
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         if let text = textField.text, !text.isEmpty {

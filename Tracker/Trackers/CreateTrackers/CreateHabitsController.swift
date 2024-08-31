@@ -92,14 +92,10 @@ final class CreateHabitsController: UIViewController,
         }
     }
     
-    func didSelect(days: Set<Weekday>) {
-        let selectedDaysText = days.map { $0.shortName }.joined(separator: ", ")
-        scheduleButton.update(title: "Расписание", subtitle: selectedDaysText)
-    }
-    
     // MARK: - Actions
     @objc private func categoryButtonTapped() {
         let categoryViewController = CategoryViewController()
+        categoryViewController.delegate = self 
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
@@ -111,6 +107,12 @@ final class CreateHabitsController: UIViewController,
         let navController = UINavigationController(rootViewController: scheduleViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
+    }
+    
+    // MARK: - Delegate Methods
+    func didSelect(days: Set<Weekday>) {
+        let selectedDaysText = days.map { $0.shortName }.joined(separator: ", ")
+        scheduleButton.update(title: "Расписание", subtitle: selectedDaysText)
     }
 }
 
@@ -148,5 +150,11 @@ extension CreateHabitsController {
             separatorLine.topAnchor.constraint(equalTo: categoryButton.bottomAnchor),
             separatorLine.heightAnchor.constraint(equalToConstant: 1)
         ])
+    }
+}
+
+extension CreateHabitsController: CategoryViewControllerDelegate {
+    func didCreateCategory(_ category: String) {
+        categoryButton.update(title: "Категория", subtitle: category)
     }
 }
