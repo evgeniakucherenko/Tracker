@@ -41,7 +41,7 @@ class CategoryCell: UITableViewCell {
             customTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             customTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             customTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            customTextField.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+            customTextField.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
     }
     
@@ -52,29 +52,40 @@ class CategoryCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(with category: String, isSelected: Bool, isFirst: Bool, isLast: Bool) {
+    func configure(with category: String, isSelected: Bool, isFirst: Bool, isLast: Bool, isSingleItem: Bool) {
         customTextField.text = category
-        
+
         if isSelected {
-                    accessoryView = UIImageView(image: UIImage(named: "check_icon"))
-                } else {
-                    accessoryView = nil
-                }
-        
-        contentView.layer.cornerRadius = (isFirst || isLast) ? 16 : 0
-        contentView.layer.maskedCorners = []
-        
-        if isFirst {
-            contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        }
-        if isLast {
-            contentView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            accessoryView = UIImageView(image: UIImage(named: "check_icon"))
+        } else {
+            accessoryView = nil
         }
 
-        if isFirst && isLast {
-            separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+        layer.cornerRadius = 16
+        layer.masksToBounds = true
+
+        var maskedCorners: CACornerMask = []
+
+        if isFirst {
+            maskedCorners.insert(.layerMinXMinYCorner)
+            maskedCorners.insert(.layerMaxXMinYCorner)
+        }
+        if isLast {
+            maskedCorners.insert(.layerMinXMaxYCorner)
+            maskedCorners.insert(.layerMaxXMaxYCorner)
+        }
+        
+        layer.maskedCorners = maskedCorners
+
+        if isLast || isSingleItem {
+            separatorInset = UIEdgeInsets(top: 0, left: contentView.bounds.width + 100, bottom: 0, right: 0)
         } else {
             separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         }
     }
+
 }
+
+
+
+

@@ -121,7 +121,8 @@ extension CategoryViewController: UITableViewDataSource {
         let isFirst = indexPath.row == 0
         let isLast = indexPath.row == categories.count - 1
         
-        cell.configure(with: category, isSelected: isSelected, isFirst: isFirst, isLast: isLast)
+        let isSingleItem = categories.count == 1
+        cell.configure(with: category, isSelected: isSelected, isFirst: isFirst, isLast: isLast, isSingleItem: isSingleItem)
         
         return cell
     }
@@ -148,4 +149,6 @@ extension CategoryViewController: CategoryViewControllerDelegate {
         tableView.reloadData()
     }
 }
+
+
 
