@@ -8,12 +8,17 @@
 import UIKit
 import Foundation
 
-final class TrackersViewController: UIViewController, 
+
+final class TrackersViewController: UIViewController,
                                     CreateHabitsControllerDelegate {
 
     var categories: [TrackerCategory] = []
-    var completedTrackers: [TrackerRecord] = []
+    var completedTrackers: Set<UUID> = []
     private var filteredTrackers: [Tracker] = []
+    
+    private var currentDate: Date {
+        return datePicker.date
+    }
 
     // MARK: - UI Elements
     private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -61,7 +66,7 @@ final class TrackersViewController: UIViewController,
     }
 
     @objc private func dateChanged() {
-        let selectedDayOfWeek = Calendar.current.component(.weekday, from: datePicker.date)
+        let selectedDayOfWeek = Calendar.current.component(.weekday, from: currentDate)
         updateUIForSelectedDay(selectedDayOfWeek: selectedDayOfWeek)
     }
 
@@ -92,14 +97,25 @@ final class TrackersViewController: UIViewController,
             
             let updatedCategory = TrackerCategory(title: categories[index].title, trackers: updatedTrackers)
             
-            categories[index] = updatedCategory
+            var newCategories = categories
+            newCategories[index] = updatedCategory
+            categories = newCategories
         } else {
             let newCategory = TrackerCategory(title: category, trackers: [tracker])
             categories.append(newCategory)
         }
 
         self.collectionView.reloadData()
-        self.updateUIForSelectedDay(selectedDayOfWeek: Calendar.current.component(.weekday, from: self.datePicker.date))
+        self.updateUIForSelectedDay(selectedDayOfWeek: Calendar.current.component(.weekday, from: self.currentDate))
+    }
+    
+    private func toggleTrackerCompletion(tracker: Tracker) {
+        if completedTrackers.contains(tracker.id) {
+            completedTrackers.remove(tracker.id)
+        } else {
+            completedTrackers.insert(tracker.id)
+        }
+        collectionView.reloadData()
     }
 }
 
