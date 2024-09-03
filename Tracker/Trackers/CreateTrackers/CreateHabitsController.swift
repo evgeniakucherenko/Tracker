@@ -8,10 +8,16 @@
 import Foundation
 import UIKit
 
+protocol CreateHabitsControllerDelegate: AnyObject {
+    func didCreateTracker(_ tracker: Tracker, inCategory category: String)
+}
+
 final class CreateHabitsController: UIViewController, 
                                     ScheduleViewControllerDelegate {
     
     private var selectedDays: Set<Weekday> = []
+    weak var delegate: CreateHabitsControllerDelegate?
+    private var selectedCategory: String?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -35,9 +41,27 @@ final class CreateHabitsController: UIViewController,
     private lazy var createButton: UIButton = {
         let button = createButton(title: "Создать", backgroundColor: .grayColorYP)
         button.setTitleColor(.white, for: .normal)
+        button.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
         return button
     }()
     
+    @objc private func createButtonTapped() {
+        guard let trackerName = nameTextField.text, !trackerName.isEmpty else {
+            return
+        }
+
+        let tracker = Tracker(
+            id: UUID(),
+            name: trackerName,
+            color: .selection14,
+            emoji: "🙂",
+            schedule: selectedDays
+        )
+
+        delegate?.didCreateTracker(tracker, inCategory: selectedCategory ?? "Без категории")
+        dismiss(animated: true, completion: nil)
+    }
+
     private lazy var nameTextField: CustomTextField = {
         let textField = CustomTextField()
         textField.placeholder = "Введите название трекера"
@@ -111,6 +135,7 @@ final class CreateHabitsController: UIViewController,
     
     // MARK: - Delegate Methods
     func didSelect(days: Set<Weekday>) {
+        selectedDays = days
         let selectedDaysText = days.map { $0.shortName }.joined(separator: ", ")
         scheduleButton.update(title: "Расписание", subtitle: selectedDaysText)
     }
@@ -155,6 +180,11 @@ extension CreateHabitsController {
 
 extension CreateHabitsController: CategoryViewControllerDelegate {
     func didCreateCategory(_ category: String) {
+        selectedCategory = category 
         categoryButton.update(title: "Категория", subtitle: category)
     }
 }
+
+
+
+

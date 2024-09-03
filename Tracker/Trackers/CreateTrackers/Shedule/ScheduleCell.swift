@@ -77,14 +77,14 @@ class ScheduleCell: UITableViewCell {
     // MARK: - Setup Methods
     private func setupViews() {
         contentView.addSubview(containerView)
+        contentView.addSubview(separatorView)
         containerView.addSubview(dayLabel)
         containerView.addSubview(switchControl)
-        contentView.addSubview(separatorView)
         
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        dayLabel.translatesAutoresizingMaskIntoConstraints = false
-        switchControl.translatesAutoresizingMaskIntoConstraints = false
-        separatorView.translatesAutoresizingMaskIntoConstraints = false
+        [containerView,dayLabel,
+         switchControl,separatorView].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
     }
     
     private func setupConstraints() {

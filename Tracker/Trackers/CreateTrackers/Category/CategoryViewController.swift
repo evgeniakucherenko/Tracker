@@ -60,6 +60,7 @@ final class CategoryViewController: UIViewController {
         setupNavBar()
         setupViews()
         setupConstraints()
+        loadCategories()
     }
     
     // MARK: - Setup Methods
@@ -146,7 +147,18 @@ extension CategoryViewController: UITableViewDelegate {
 extension CategoryViewController: CategoryViewControllerDelegate {
     func didCreateCategory(_ category: String) {
         categories.append(category)
+        saveCategories()
         tableView.reloadData()
+    }
+    
+    private func saveCategories() {
+        UserDefaults.standard.set(categories, forKey: "savedCategories")
+    }
+    
+    private func loadCategories() {
+        if let savedCategories = UserDefaults.standard.array(forKey: "savedCategories") as? [String] {
+            categories = savedCategories
+        }
     }
 }
 

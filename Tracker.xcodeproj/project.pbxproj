@@ -31,6 +31,7 @@
 		621FDB342C81F9D6003804AE /* ScheduleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB332C81F9D6003804AE /* ScheduleViewController.swift */; };
 		621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB352C821D4A003804AE /* ScheduleCell.swift */; };
 		621FDB382C82F9CB003804AE /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB372C82F9CB003804AE /* CategoryCell.swift */; };
+		621FDB3D2C84B645003804AE /* TrackerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB3C2C84B645003804AE /* TrackerCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,7 @@
 		621FDB332C81F9D6003804AE /* ScheduleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewController.swift; sourceTree = "<group>"; };
 		621FDB352C821D4A003804AE /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 		621FDB372C82F9CB003804AE /* CategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
+		621FDB3C2C84B645003804AE /* TrackerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,6 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				621FDAE22C7B520D003804AE /* TrackersViewController.swift */,
+				621FDB3C2C84B645003804AE /* TrackerCell.swift */,
 				621FDB102C7C9D54003804AE /* StatViewController.swift */,
 				621FDB322C81F8A2003804AE /* CreateTrackers */,
 			);
@@ -375,6 +378,7 @@
 				621FDB222C80CA3D003804AE /* СustomButton.swift in Sources */,
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,
 				621FDADF2C7B520D003804AE /* AppDelegate.swift in Sources */,
+				621FDB3D2C84B645003804AE /* TrackerCell.swift in Sources */,
 				621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */,
 				621FDB312C81F1E8003804AE /* CreateCategoryViewController.swift in Sources */,
 				621FDB202C80C609003804AE /* CreateTrackerController.swift in Sources */,
