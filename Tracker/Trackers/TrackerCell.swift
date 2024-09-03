@@ -12,6 +12,7 @@ class TrackerCell: UICollectionViewCell {
     
     // MARK: - Public Properties
     static let reuseIdentifier = "TrackerCell"
+    var onCompletionToggle: (() -> Void)?
     
     // MARK: - UI-elements
     private let categoryLabel: UILabel = {
@@ -65,6 +66,7 @@ class TrackerCell: UICollectionViewCell {
         button.tintColor = .white
         button.backgroundColor = .selection14
         button.layer.cornerRadius = 17
+        button.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -89,7 +91,42 @@ class TrackerCell: UICollectionViewCell {
         setupConstraints()
     }
 
-    // MARK: - Setup Methods
+    // MARK: - Configure Cell
+    func configure(with title: String, days: Int, category: String, emoji: String, color: UIColor, isCompleted: Bool) {
+        titleLabel.text = title
+        daysLabel.text = "\(days) \(pluralizeDay(days))"
+        emojiLabel.text = emoji
+        cardImageView.backgroundColor = color
+        categoryLabel.text = category
+        categoryLabel.isHidden = false
+        updateButtonAppearance(isCompleted: isCompleted)
+    }
+
+    private func pluralizeDay(_ count: Int) -> String {
+        switch count % 10 {
+        case 1 where count % 100 != 11:
+            return "день"
+        case 2, 3, 4 where (count % 100 < 10 || count % 100 >= 20):
+            return "дня"
+        default:
+            return "дней"
+        }
+    }
+
+    private func updateButtonAppearance(isCompleted: Bool) {
+        let config = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+        let image = UIImage(systemName: isCompleted ? "checkmark" : "plus", withConfiguration: config)
+        plusButton.setImage(image, for: .normal)
+        plusButton.alpha = isCompleted ? 0.3 : 1.0
+    }
+
+    @objc private func plusButtonTapped() {
+        onCompletionToggle?()
+    }
+}
+
+// MARK: - Setup UI
+extension TrackerCell {
     private func setupViews() {
         self.addSubview(categoryLabel)
         cardImageView.addSubview(titleLabel)
@@ -136,18 +173,5 @@ class TrackerCell: UICollectionViewCell {
             daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
             daysLabel.trailingAnchor.constraint(equalTo: plusButton.leadingAnchor, constant: -10)
         ])
-    }
-
-    // MARK: - Configure Cell
-    func configure(with title: String, days: String, category: String, emoji: String, color: UIColor, isRepeatedCategory: Bool) {
-        titleLabel.text = title
-        daysLabel.text = days
-        emojiLabel.text = emoji
-        cardImageView.backgroundColor = color
-
-        categoryLabel.text = category
-        categoryLabel.isHidden = false
-        
-        categoryLabel.textColor = isRepeatedCategory ? .white : .black
     }
 }
