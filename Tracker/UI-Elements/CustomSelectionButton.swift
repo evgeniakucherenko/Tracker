@@ -45,9 +45,10 @@ class CustomSelectionButton: UIButton {
     
     // MARK: - Layout
     private func setupConstraints() {
-        customTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        arrowImageView.translatesAutoresizingMaskIntoConstraints = false
-        self.translatesAutoresizingMaskIntoConstraints = false
+        
+        [customTitleLabel, arrowImageView, self].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
            
         NSLayoutConstraint.activate([
             customTitleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
@@ -56,9 +57,6 @@ class CustomSelectionButton: UIButton {
                
             arrowImageView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             arrowImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            
-            self.heightAnchor.constraint(equalToConstant: 75),
-            self.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40)
         ])
     }
 

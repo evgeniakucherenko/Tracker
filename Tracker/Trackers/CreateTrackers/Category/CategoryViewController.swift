@@ -88,6 +88,7 @@ final class CategoryViewController: UIViewController {
             addCategoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             addCategoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             addCategoryButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50),
+            addCategoryButton.heightAnchor.constraint(equalToConstant: 60),
             
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -104,12 +105,27 @@ final class CategoryViewController: UIViewController {
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
     }
+    
+    // MARK: - Private Methods (User Defaults)
+    private func saveCategories() {
+        UserDefaults.standard.set(categories, forKey: "savedCategories")
+    }
+    
+    private func loadCategories() {
+        if let savedCategories = UserDefaults.standard.array(forKey: "savedCategories") as? [String] {
+            categories = savedCategories
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource
 extension CategoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 75
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -149,16 +165,6 @@ extension CategoryViewController: CategoryViewControllerDelegate {
         categories.append(category)
         saveCategories()
         tableView.reloadData()
-    }
-    
-    private func saveCategories() {
-        UserDefaults.standard.set(categories, forKey: "savedCategories")
-    }
-    
-    private func loadCategories() {
-        if let savedCategories = UserDefaults.standard.array(forKey: "savedCategories") as? [String] {
-            categories = savedCategories
-        }
     }
 }
 

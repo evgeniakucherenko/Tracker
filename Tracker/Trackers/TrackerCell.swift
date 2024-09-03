@@ -92,13 +92,14 @@ class TrackerCell: UICollectionViewCell {
     }
 
     // MARK: - Configure Cell
-    func configure(with title: String, days: Int, category: String, emoji: String, color: UIColor, isCompleted: Bool) {
+    func configure(with title: String, days: Int, category: String, emoji: String, color: UIColor, isRepeatedCategory: Bool, isCompleted: Bool) {
         titleLabel.text = title
         daysLabel.text = "\(days) \(pluralizeDay(days))"
         emojiLabel.text = emoji
         cardImageView.backgroundColor = color
         categoryLabel.text = category
         categoryLabel.isHidden = false
+        categoryLabel.textColor = isRepeatedCategory ? .white : .black
         updateButtonAppearance(isCompleted: isCompleted)
     }
 

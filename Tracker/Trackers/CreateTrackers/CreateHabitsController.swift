@@ -12,7 +12,7 @@ protocol CreateHabitsControllerDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, inCategory category: String)
 }
 
-final class CreateHabitsController: UIViewController, 
+final class CreateHabitsController: UIViewController,
                                     ScheduleViewControllerDelegate {
     
     private var selectedDays: Set<Weekday> = []
@@ -27,6 +27,9 @@ final class CreateHabitsController: UIViewController,
         setupNavBar()
         setupViews()
         setupConstraints()
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
+        view.addGestureRecognizer(tapGesture)
     }
     
     // MARK: - UI Elements
@@ -110,7 +113,7 @@ final class CreateHabitsController: UIViewController,
     }
     
     private func setupViews() {
-        [cancelButton,createButton,nameTextField, 
+        [cancelButton,createButton,nameTextField,
          categoryButton, scheduleButton, separatorLine].forEach {
             view.addSubview($0)
         }
@@ -119,7 +122,7 @@ final class CreateHabitsController: UIViewController,
     // MARK: - Actions
     @objc private func categoryButtonTapped() {
         let categoryViewController = CategoryViewController()
-        categoryViewController.delegate = self 
+        categoryViewController.delegate = self
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
@@ -131,6 +134,10 @@ final class CreateHabitsController: UIViewController,
         let navController = UINavigationController(rootViewController: scheduleViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
+    }
+    
+    @objc private func hideKeyboard() {
+        view.endEditing(true)
     }
     
     // MARK: - Delegate Methods
@@ -158,7 +165,7 @@ extension CreateHabitsController {
             nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             nameTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            nameTextField.heightAnchor.constraint(equalToConstant: 60),
+            nameTextField.heightAnchor.constraint(equalToConstant: 75),
             
             categoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             categoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -180,11 +187,7 @@ extension CreateHabitsController {
 
 extension CreateHabitsController: CategoryViewControllerDelegate {
     func didCreateCategory(_ category: String) {
-        selectedCategory = category 
+        selectedCategory = category
         categoryButton.update(title: "Категория", subtitle: category)
     }
 }
-
-
-
-

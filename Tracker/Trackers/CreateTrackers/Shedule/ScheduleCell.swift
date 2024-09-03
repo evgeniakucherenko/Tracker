@@ -112,3 +112,5 @@ class ScheduleCell: UITableViewCell {
         onSwitchToggled?(sender.isOn)
     }
 }
+
+

@@ -153,13 +153,13 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout,
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.reuseIdentifier, for: indexPath) as! TrackerCell
         let tracker = categories[indexPath.section].trackers[indexPath.item]
         let categoryTitle = categories[indexPath.section].title
-
+        let isRepeatedCategory = indexPath.item > 0
         let isCompleted = isTrackerCompleted(tracker, on: currentDate)
 
         let completionCount = completedTrackers.filter { $0 == tracker.id }.count
 
-        cell.configure(with: tracker.name, days: completionCount, category: categoryTitle, emoji: tracker.emoji, color: tracker.color, isCompleted: isCompleted)
-        
+        cell.configure(with: tracker.name, days: completionCount, category: categoryTitle, emoji: tracker.emoji, color: tracker.color,isRepeatedCategory: isRepeatedCategory, isCompleted: isCompleted)
+  
         cell.onCompletionToggle = { [weak self] in
             self?.toggleTrackerCompletion(tracker)
         }
