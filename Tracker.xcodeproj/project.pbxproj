@@ -32,6 +32,7 @@
 		621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB352C821D4A003804AE /* ScheduleCell.swift */; };
 		621FDB382C82F9CB003804AE /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB372C82F9CB003804AE /* CategoryCell.swift */; };
 		621FDB3D2C84B645003804AE /* TrackerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB3C2C84B645003804AE /* TrackerCell.swift */; };
+		621FDB422C88EFA4003804AE /* IrregularEventController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB412C88EFA4003804AE /* IrregularEventController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +82,7 @@
 		621FDB352C821D4A003804AE /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 		621FDB372C82F9CB003804AE /* CategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
 		621FDB3C2C84B645003804AE /* TrackerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCell.swift; sourceTree = "<group>"; };
+		621FDB412C88EFA4003804AE /* IrregularEventController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IrregularEventController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -216,6 +218,7 @@
 				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
 				621FDB3A2C82FAC3003804AE /* Shedule */,
 				621FDB392C82FAAD003804AE /* Category */,
+				621FDB412C88EFA4003804AE /* IrregularEventController.swift */,
 			);
 			path = CreateTrackers;
 			sourceTree = "<group>";
@@ -374,6 +377,7 @@
 				621FDB342C81F9D6003804AE /* ScheduleViewController.swift in Sources */,
 				621FDB152C7DB6F6003804AE /* LaunchViewController.swift in Sources */,
 				621FDB2F2C81E89D003804AE /* CategoryViewController.swift in Sources */,
+				621FDB422C88EFA4003804AE /* IrregularEventController.swift in Sources */,
 				621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */,
 				621FDB222C80CA3D003804AE /* СustomButton.swift in Sources */,
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,

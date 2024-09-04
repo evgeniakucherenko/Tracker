@@ -28,7 +28,9 @@ final class CreateTrackerController: UIViewController {
     }()
     
     private lazy var irregularEventButton: CustomButton = {
-        return CustomButton(title: "Нерегулярное событие")
+        let button = CustomButton(title: "Нерегулярное событие")
+        button.addTarget(self, action: #selector(irregularEventButtonTapped), for: .touchUpInside)
+        return button
     }()
     
     // MARK: - Setup Methods
@@ -46,9 +48,15 @@ final class CreateTrackerController: UIViewController {
         NSLayoutConstraint.activate([
             habitButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 395),
             habitButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            habitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            habitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            habitButton.heightAnchor.constraint(equalToConstant: 60),
             
             irregularEventButton.topAnchor.constraint(equalTo: habitButton.bottomAnchor, constant: 16),
-            irregularEventButton.centerXAnchor.constraint(equalTo:  view.centerXAnchor)
+            irregularEventButton.centerXAnchor.constraint(equalTo:  view.centerXAnchor),
+            irregularEventButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            irregularEventButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            irregularEventButton.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
     
@@ -56,6 +64,13 @@ final class CreateTrackerController: UIViewController {
     @objc private func habitButtonTapped() {
         let сreateHabitsController = CreateHabitsController()
         let navController = UINavigationController(rootViewController: сreateHabitsController)
+        navController.modalPresentationStyle = .formSheet
+        present(navController, animated: true, completion: nil)
+    }
+    
+    @objc private func irregularEventButtonTapped() {
+        let irregularEventController = IrregularEventController()
+        let navController = UINavigationController(rootViewController: irregularEventController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
     }

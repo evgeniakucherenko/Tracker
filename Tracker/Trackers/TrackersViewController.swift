@@ -71,9 +71,8 @@ final class TrackersViewController: UIViewController,
     }
     
     @objc private func addButtonTapped() {
-        let createHabitsController = CreateHabitsController()
-        createHabitsController.delegate = self
-        let navController = UINavigationController(rootViewController: createHabitsController)
+        let createTrackerController = CreateTrackerController()
+        let navController = UINavigationController(rootViewController: createTrackerController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
     }

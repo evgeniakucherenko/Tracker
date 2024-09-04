@@ -181,8 +181,14 @@ final class CreateHabitsController: UIViewController,
     // MARK: - Delegate Methods
     func didSelect(days: Set<Weekday>) {
         selectedDays = days
-        let selectedDaysText = days.map { $0.shortName }.joined(separator: ", ")
-        scheduleButton.update(title: "Расписание", subtitle: selectedDaysText)
+        
+        if selectedDays.count == Weekday.allCases.count {
+            scheduleButton.update(title: "Расписание", subtitle: "Каждый день")
+        } else {
+            let selectedDaysText = days.map { $0.shortName }.joined(separator: ", ")
+            scheduleButton.update(title: "Расписание", subtitle: selectedDaysText)
+        }
+        
         updateCreateButtonState()
     }
 }

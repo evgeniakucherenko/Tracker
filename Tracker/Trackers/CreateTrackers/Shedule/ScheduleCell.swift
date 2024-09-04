@@ -26,7 +26,7 @@ class ScheduleCell: UITableViewCell {
         let switchControl = UISwitch()
         switchControl.onTintColor = .blueYP
         switchControl.thumbTintColor = .white
-            switchControl.tintColor = .lightGrayYP
+        switchControl.tintColor = .lightGrayYP
         switchControl.addTarget(self, action: #selector(switchToggled(_:)), for: .valueChanged)
         return switchControl
     }()
