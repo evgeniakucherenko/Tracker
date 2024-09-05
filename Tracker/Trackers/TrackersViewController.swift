@@ -12,7 +12,6 @@ final class TrackersViewController: UIViewController,
                                     CreateHabitsControllerDelegate,
                                     IrregularEventControllerDelegate {
 
-    // MARK: - Properties
     var categories: [TrackerCategory] = []
     var completedTrackers: Set<UUID> = []
     private var trackers: [Tracker] = []
