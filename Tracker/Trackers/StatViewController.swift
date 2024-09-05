@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class StatViewController: UIViewController {
+final class StatViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

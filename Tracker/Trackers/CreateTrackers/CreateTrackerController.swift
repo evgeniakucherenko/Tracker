@@ -10,7 +10,9 @@ import UIKit
 
 final class CreateTrackerController: UIViewController {
     
-    //MARK: - Lifycylce
+    weak var trackersViewControllerDelegate: (CreateHabitsControllerDelegate & IrregularEventControllerDelegate)?
+    
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -63,6 +65,7 @@ final class CreateTrackerController: UIViewController {
     // MARK: - Actions
     @objc private func habitButtonTapped() {
         let сreateHabitsController = CreateHabitsController()
+        сreateHabitsController.delegate = self
         let navController = UINavigationController(rootViewController: сreateHabitsController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
@@ -70,8 +73,23 @@ final class CreateTrackerController: UIViewController {
     
     @objc private func irregularEventButtonTapped() {
         let irregularEventController = IrregularEventController()
+        irregularEventController.delegate = self 
         let navController = UINavigationController(rootViewController: irregularEventController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
+    }
+}
+
+// MARK: - CreateHabitsControllerDelegate & IrregularEventControllerDelegate
+extension CreateTrackerController: CreateHabitsControllerDelegate & IrregularEventControllerDelegate {
+    
+    func didCreateTracker(_ tracker: Tracker, inCategory category: String) {
+        trackersViewControllerDelegate?.didCreateTracker(tracker, inCategory: category)
+        dismiss(animated: true, completion: nil)
+    }
+
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) {
+        trackersViewControllerDelegate?.didCreateIrregularEvent(tracker, inCategory: category)
+        dismiss(animated: true, completion: nil)
     }
 }

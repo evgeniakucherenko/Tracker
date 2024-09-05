@@ -1,24 +1,23 @@
 //
-//  CreatingHabitsController.swift
+//  IrregularEventController.swift
 //  Tracker
 //
-//  Created by Evgenia Kucherenko on 29.08.2024.
+//  Created by Evgenia Kucherenko on 04.09.2024.
 //
 
 import Foundation
 import UIKit
 
-protocol CreateHabitsControllerDelegate: AnyObject {
-    func didCreateTracker(_ tracker: Tracker, inCategory category: String)
+protocol IrregularEventControllerDelegate: AnyObject {
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String)
 }
 
-final class CreateHabitsController: UIViewController,
-                                    ScheduleViewControllerDelegate {
+final class IrregularEventController: UIViewController {
     
     // MARK: - Properties
-    weak var delegate: CreateHabitsControllerDelegate?
+    weak var delegate: IrregularEventControllerDelegate?
     
-    private var selectedDays: Set<Weekday> = []
+    private var trackerRecords: [TrackerRecord] = []
     private var selectedCategory: String?
     private var categoryButtonTopConstraint: NSLayoutConstraint?
     
@@ -30,13 +29,11 @@ final class CreateHabitsController: UIViewController,
         setupNavBar()
         setupViews()
         setupConstraints()
-        
         nameTextField.delegate = self
+        updateCreateButtonState()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
         view.addGestureRecognizer(tapGesture)
-        
-        updateCreateButtonState()
     }
     
     // MARK: - UI Elements
@@ -48,7 +45,7 @@ final class CreateHabitsController: UIViewController,
         button.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
         return button
     }()
-    
+
     private lazy var createButton: UIButton = {
         let button = createButton(title: "Создать", backgroundColor: .grayColorYP)
         button.setTitleColor(.white, for: .normal)
@@ -56,14 +53,14 @@ final class CreateHabitsController: UIViewController,
         button.isEnabled = false
         return button
     }()
-    
+
     private lazy var nameTextField: CustomTextField = {
         let textField = CustomTextField()
         textField.placeholder = "Введите название трекера"
         textField.autocapitalizationType = .words
         return textField
     }()
-    
+
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
         label.text = "Ограничение 38 символов"
@@ -74,7 +71,7 @@ final class CreateHabitsController: UIViewController,
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     private lazy var categoryButton: CustomSelectionButton = {
         let button = CustomSelectionButton(title: "Категория")
         button.layer.cornerRadius = 16
@@ -82,22 +79,7 @@ final class CreateHabitsController: UIViewController,
         button.addTarget(self, action: #selector(categoryButtonTapped), for: .touchUpInside)
         return button
     }()
-    
-    private lazy var scheduleButton: CustomSelectionButton = {
-        let button = CustomSelectionButton(title: "Расписание")
-        button.layer.cornerRadius = 16
-        button.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        button.addTarget(self, action: #selector(scheduleButtonTapped), for: .touchUpInside)
-        return button
-    }()
-    
-    private let separatorLine: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor(resource: .grayColorYP)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
+
     // MARK: - Setup Methods
     private func createButton(title: String, backgroundColor: UIColor) -> UIButton {
         let button = UIButton()
@@ -111,25 +93,23 @@ final class CreateHabitsController: UIViewController,
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }
-    
+
     private func setupNavBar() {
-        _ = TitlePopup(title: "Новая привычка", navigationItem: navigationItem)
+        _ = TitlePopup(title: "Новое нерегулярное событие", navigationItem: navigationItem)
     }
-    
+
     private func setupViews() {
-        [cancelButton,createButton,nameTextField,
-         categoryButton, scheduleButton, separatorLine, errorLabel].forEach {
+        [cancelButton,createButton,nameTextField,errorLabel, categoryButton].forEach {
             view.addSubview($0)
         }
     }
-    
+
     // MARK: - Actions
     private func updateCreateButtonState() {
         let isNameFilled = !(nameTextField.text?.isEmpty ?? true)
         let isCategorySelected = selectedCategory != nil
-        let isScheduleSelected = !selectedDays.isEmpty
-            
-        if isNameFilled && isCategorySelected && isScheduleSelected {
+
+        if isNameFilled && isCategorySelected {
             createButton.backgroundColor = .blackYP
             createButton.isEnabled = true
         } else {
@@ -137,7 +117,7 @@ final class CreateHabitsController: UIViewController,
             createButton.isEnabled = false
         }
     }
-    
+
     @objc private func createButtonTapped() {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else {
             return
@@ -147,50 +127,33 @@ final class CreateHabitsController: UIViewController,
             id: UUID(),
             name: trackerName,
             color: .selection14,
-            emoji: "🙂",
-            schedule: selectedDays
+            emoji: "🍒",
+            schedule: []
         )
 
-        delegate?.didCreateTracker(tracker, inCategory: selectedCategory ?? "Без категории")
+        let currentDate = Date()
+        let trackerRecord = TrackerRecord(id: tracker.id, date: currentDate)
+
+        saveTrackerRecord(trackerRecord)
+
+        delegate?.didCreateIrregularEvent(tracker, inCategory: selectedCategory ?? "Без категории")
         closeModalAndSwitchToTab(index: 0)
     }
     
+    @objc private func hideKeyboard() {
+        view.endEditing(true)
+    }
+
     @objc private func cancelButtonTapped() {
         closeModalAndSwitchToTab(index: 0)
     }
-    
+
     @objc private func categoryButtonTapped() {
         let categoryViewController = CategoryViewController()
         categoryViewController.delegate = self
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
-    }
-       
-    @objc private func scheduleButtonTapped() {
-        let scheduleViewController = ScheduleViewController(selectedDays: selectedDays)
-        scheduleViewController.delegate = self
-        let navController = UINavigationController(rootViewController: scheduleViewController)
-        navController.modalPresentationStyle = .formSheet
-        present(navController, animated: true, completion: nil)
-    }
-    
-    @objc private func hideKeyboard() {
-        view.endEditing(true)
-    }
-    
-    // MARK: - Delegate Methods
-    func didSelect(days: Set<Weekday>) {
-        selectedDays = days
-        
-        if selectedDays.count == Weekday.allCases.count {
-            scheduleButton.update(title: "Расписание", subtitle: "Каждый день")
-        } else {
-            let selectedDaysText = days.map { $0.shortName }.joined(separator: ", ")
-            scheduleButton.update(title: "Расписание", subtitle: selectedDaysText)
-        }
-        
-        updateCreateButtonState()
     }
     
     // MARK: - Private Methods
@@ -204,17 +167,19 @@ final class CreateHabitsController: UIViewController,
         self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
     }
     
+    private func saveTrackerRecord(_ record: TrackerRecord) {
+        trackerRecords.append(record)
+    }
 }
 
 // MARK: - CategoryViewControllerDelegate & UITextFieldDelegate
-extension CreateHabitsController: CategoryViewControllerDelegate & UITextFieldDelegate {
-    
+extension IrregularEventController: CategoryViewControllerDelegate & UITextFieldDelegate {
     func didCreateCategory(_ category: String) {
         selectedCategory = category
         categoryButton.update(title: "Категория", subtitle: category)
         updateCreateButtonState()
     }
-    
+
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let currentText = textField.text ?? ""
         
@@ -249,49 +214,37 @@ extension CreateHabitsController: CategoryViewControllerDelegate & UITextFieldDe
     }
 }
 
-extension CreateHabitsController {
+extension IrregularEventController{
     // MARK: - Layout
     private func setupConstraints() {
-            
+
         categoryButtonTopConstraint = categoryButton.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 8)
-            
+
         NSLayoutConstraint.activate([
             cancelButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -8),
             cancelButton.heightAnchor.constraint(equalToConstant: 60),
             cancelButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
             cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor),
-          
+
             createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             createButton.heightAnchor.constraint(equalToConstant: 60),
             createButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-                
+
             nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             nameTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
-                
+
             errorLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 8),
             errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             errorLabel.heightAnchor.constraint(equalToConstant: 22),
-                
+
             categoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             categoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             categoryButtonTopConstraint!,
-            categoryButton.heightAnchor.constraint(equalToConstant: 75),
-                
-            scheduleButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            scheduleButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            scheduleButton.topAnchor.constraint(equalTo: categoryButton.bottomAnchor, constant: 0),
-            scheduleButton.heightAnchor.constraint(equalToConstant: 75),
-                
-            separatorLine.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            separatorLine.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
-            separatorLine.topAnchor.constraint(equalTo: categoryButton.bottomAnchor),
-            separatorLine.heightAnchor.constraint(equalToConstant: 1)
+            categoryButton.heightAnchor.constraint(equalToConstant: 75)
         ])
     }
 }
-
-    

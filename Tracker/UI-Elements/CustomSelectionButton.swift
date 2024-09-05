@@ -10,6 +10,7 @@ import UIKit
 
 class CustomSelectionButton: UIButton {
     
+    // MARK: - Properties
     private let customTitleLabel = UILabel()
     private let arrowImageView = UIImageView()
     

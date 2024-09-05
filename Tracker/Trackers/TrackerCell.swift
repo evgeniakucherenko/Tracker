@@ -27,6 +27,7 @@ class TrackerCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .whiteYP
+        label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -100,6 +101,11 @@ class TrackerCell: UICollectionViewCell {
         categoryLabel.text = category
         categoryLabel.isHidden = false
         categoryLabel.textColor = isRepeatedCategory ? .white : .black
+        
+        let borderColor = UIColor(named: "gray_color_YP")?.withAlphaComponent(0.3)
+        cardImageView.layer.borderColor = borderColor?.cgColor
+        cardImageView.layer.borderWidth = 1.0
+        
         updateButtonAppearance(isCompleted: isCompleted)
     }
 
@@ -120,7 +126,8 @@ class TrackerCell: UICollectionViewCell {
         plusButton.setImage(image, for: .normal)
         plusButton.alpha = isCompleted ? 0.3 : 1.0
     }
-
+    
+    // MARK: - Actions
     @objc private func plusButtonTapped() {
         onCompletionToggle?()
     }
@@ -128,6 +135,7 @@ class TrackerCell: UICollectionViewCell {
 
 // MARK: - Setup UI
 extension TrackerCell {
+    
     private func setupViews() {
         self.addSubview(categoryLabel)
         cardImageView.addSubview(titleLabel)
@@ -163,6 +171,7 @@ extension TrackerCell {
             emojiLabel.centerYAnchor.constraint(equalTo: emojiBackgroundView.centerYAnchor),
             
             titleLabel.leadingAnchor.constraint(equalTo: cardImageView.leadingAnchor, constant: 12),
+            titleLabel.trailingAnchor.constraint(equalTo: cardImageView.trailingAnchor, constant: -12),
             titleLabel.bottomAnchor.constraint(equalTo: cardImageView.bottomAnchor, constant: -12),
             
             plusButton.widthAnchor.constraint(equalToConstant: 34),

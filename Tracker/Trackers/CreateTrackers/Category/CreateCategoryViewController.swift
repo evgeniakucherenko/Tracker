@@ -14,6 +14,7 @@ protocol CategoryViewControllerDelegate: AnyObject {
 
 final class CreateCategoryViewController: UIViewController, UITextFieldDelegate {
     
+    // MARK: - Properties
     weak var delegate: CategoryViewControllerDelegate?
     
     //MARK: - UI Elements
@@ -33,7 +34,7 @@ final class CreateCategoryViewController: UIViewController, UITextFieldDelegate 
         return button
     }()
     
-    //MARK: - Lifycylce
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         view.backgroundColor = .white
         super.viewDidLoad()
@@ -78,7 +79,6 @@ final class CreateCategoryViewController: UIViewController, UITextFieldDelegate 
         
         dismiss(animated: true, completion: nil)
     }
-    
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         if let text = textField.text, !text.isEmpty {

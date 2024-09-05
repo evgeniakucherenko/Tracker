@@ -10,6 +10,7 @@ import UIKit
 
 class CategoryCell: UITableViewCell {
     
+    // MARK: - Properties
     static let reuseIdentifier = "CategoryCell"
     
     // MARK: - UI Elements

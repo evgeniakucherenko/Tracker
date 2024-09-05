@@ -9,12 +9,14 @@ import UIKit
 import Foundation
 
 final class TrackersViewController: UIViewController,
-                                    CreateHabitsControllerDelegate {
+                                    CreateHabitsControllerDelegate,
+                                    IrregularEventControllerDelegate {
 
+    // MARK: - Properties
     var categories: [TrackerCategory] = []
     var completedTrackers: Set<UUID> = []
-    private var filteredTrackers: [Tracker] = []
-    
+    private var trackers: [Tracker] = []
+
     private var currentDate: Date {
         return datePicker.date
     }
@@ -60,47 +62,38 @@ final class TrackersViewController: UIViewController,
         setupUI()
 
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-
         dateChanged()
     }
-    
+
     // MARK: - Actions
     @objc private func dateChanged() {
         let selectedDayOfWeek = Calendar.current.component(.weekday, from: currentDate)
-        updateUIForSelectedDay(selectedDayOfWeek: selectedDayOfWeek)
+        updateUIForSelectedDay(selectedDayOfWeek)
     }
-    
+
     @objc private func addButtonTapped() {
         let createTrackerController = CreateTrackerController()
+        createTrackerController.trackersViewControllerDelegate = self
         let navController = UINavigationController(rootViewController: createTrackerController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
     }
 
     // MARK: - UI Updates
-    private func updateUIForSelectedDay(selectedDayOfWeek: Int) {
-        guard let selectedWeekday = weekdayMapping[selectedDayOfWeek] else {
-            assertionFailure("Ошибка: выбранный день недели не соответствует ни одному из значений Weekday")
-            return
-        }
-
-        let hasTrackersForSelectedDay = categories.flatMap { $0.trackers }.contains { tracker in
-            tracker.schedule.contains(selectedWeekday)
-        }
-
+    private func updateUIForSelectedDay(_ selectedDayOfWeek: Int) {
+        let trackersForSelectedDay = getTrackersForSelectedDay(selectedDayOfWeek)
         DispatchQueue.main.async {
-            let isCollectionViewHidden = !hasTrackersForSelectedDay
+            let isCollectionViewHidden = trackersForSelectedDay.isEmpty
             self.collectionView.isHidden = isCollectionViewHidden
             self.placeholderImage.isHidden = !isCollectionViewHidden
             self.labelImage.isHidden = !isCollectionViewHidden
+            self.collectionView.reloadData()
         }
     }
-    
+
     // MARK: - Tracker Management
     private func toggleTrackerCompletion(_ tracker: Tracker) {
-        guard currentDate <= Date() else {
-            return
-        }
+        guard currentDate <= Date() else { return }
 
         if completedTrackers.contains(tracker.id) {
             completedTrackers.remove(tracker.id)
@@ -109,35 +102,51 @@ final class TrackersViewController: UIViewController,
         }
         collectionView.reloadData()
     }
-    
+
     private func isTrackerCompleted(_ tracker: Tracker, on date: Date) -> Bool {
         return completedTrackers.contains(tracker.id)
     }
 
-    // MARK: - CreateHabitsControllerDelegate
+    private func getTrackersForSelectedDay(_ selectedDayOfWeek: Int) -> [Tracker] {
+        return categories.flatMap { $0.trackers }.filter { tracker in
+            if tracker.schedule.isEmpty {
+                return Calendar.current.isDate(currentDate, inSameDayAs: Date())
+            } else {
+                return tracker.schedule.contains(weekdayMapping[selectedDayOfWeek]!)
+            }
+        }
+    }
+
+    // MARK: - CreateHabitsControllerDelegate & IrregularEventControllerDelegate
     func didCreateTracker(_ tracker: Tracker, inCategory category: String) {
+        addTracker(tracker, to: category)
+        collectionView.reloadData()
+        updateUIForSelectedDay(Calendar.current.component(.weekday, from: currentDate))
+    }
+
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) {
+        addTracker(tracker, to: category)
+        collectionView.reloadData()
+        updateUIForSelectedDay(Calendar.current.component(.weekday, from: currentDate))
+    }
+
+    private func addTracker(_ tracker: Tracker, to category: String) {
         if let index = categories.firstIndex(where: { $0.title == category }) {
-        
             var updatedTrackers = categories[index].trackers
             updatedTrackers.append(tracker)
             
             let updatedCategory = TrackerCategory(title: categories[index].title, trackers: updatedTrackers)
             
-            var newCategories = categories
-            newCategories[index] = updatedCategory
-            categories = newCategories
+            categories[index] = updatedCategory
         } else {
             let newCategory = TrackerCategory(title: category, trackers: [tracker])
             categories.append(newCategory)
         }
-
-        self.collectionView.reloadData()
-        self.updateUIForSelectedDay(selectedDayOfWeek: Calendar.current.component(.weekday, from: self.currentDate))
     }
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout, UICollectionViewDataSource
-extension TrackersViewController: UICollectionViewDelegateFlowLayout,
+extension TrackersViewController: UICollectionViewDelegateFlowLayout,  
                                   UICollectionViewDataSource {
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -145,20 +154,35 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout,
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return categories[section].trackers.count
+        let selectedDayOfWeek = Calendar.current.component(.weekday, from: currentDate)
+        return categories[section].trackers.filter { tracker in
+            if tracker.schedule.isEmpty {
+                return Calendar.current.isDate(currentDate, inSameDayAs: Date())
+            } else {
+                return tracker.schedule.contains(weekdayMapping[selectedDayOfWeek]!)
+            }
+        }.count
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.reuseIdentifier, for: indexPath) as! TrackerCell
-        let tracker = categories[indexPath.section].trackers[indexPath.item]
-        let categoryTitle = categories[indexPath.section].title
-        let isRepeatedCategory = indexPath.item > 0
-        let isCompleted = isTrackerCompleted(tracker, on: currentDate)
+        let selectedDayOfWeek = Calendar.current.component(.weekday, from: currentDate)
+        
+        let trackersForSelectedDay = categories[indexPath.section].trackers.filter { tracker in
+            if tracker.schedule.isEmpty {
+                return Calendar.current.isDate(currentDate, inSameDayAs: Date())
+            } else {
+                return tracker.schedule.contains(weekdayMapping[selectedDayOfWeek]!)
+            }
+        }
 
+        let tracker = trackersForSelectedDay[indexPath.item]
+        let categoryTitle = categories[indexPath.section].title
+        let isCompleted = isTrackerCompleted(tracker, on: currentDate)
         let completionCount = completedTrackers.filter { $0 == tracker.id }.count
 
-        cell.configure(with: tracker.name, days: completionCount, category: categoryTitle, emoji: tracker.emoji, color: tracker.color,isRepeatedCategory: isRepeatedCategory, isCompleted: isCompleted)
-  
+        cell.configure(with: tracker.name, days: completionCount, category: categoryTitle, emoji: tracker.emoji, color: tracker.color, isRepeatedCategory: indexPath.item > 0, isCompleted: isCompleted)
+
         cell.onCompletionToggle = { [weak self] in
             self?.toggleTrackerCompletion(tracker)
         }
@@ -207,7 +231,7 @@ extension TrackersViewController {
             labelImage.topAnchor.constraint(equalTo: placeholderImage.bottomAnchor, constant: 8),
             labelImage.centerXAnchor.constraint(equalTo: placeholderImage.centerXAnchor),
 
-            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)

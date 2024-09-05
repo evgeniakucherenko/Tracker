@@ -15,18 +15,18 @@ protocol ScheduleViewControllerDelegate: AnyObject {
 
 class ScheduleViewController: UIViewController {
     
-    // MARK: - Public Properties
+    // MARK: - Properties
     weak var delegate: ScheduleViewControllerDelegate?
     private var selectedDays: Set<Weekday> = []
     
     //MARK: - UI Elements
+    private let tableView = UITableView()
+    
     private lazy var doneButton: CustomButton = {
         let button = CustomButton(title: "Готово")
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
         return button
     }()
-    
-    private let tableView = UITableView()
     
     // MARK: - Initializer
     init(selectedDays: Set<Weekday>) {
@@ -38,7 +38,7 @@ class ScheduleViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Lifycylce
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         view.backgroundColor = .white
         super.viewDidLoad()
@@ -89,9 +89,9 @@ class ScheduleViewController: UIViewController {
     }
 }
 
+// MARK: - UITableViewDataSource
 extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
     
-    // MARK: - UITableViewDataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             return Weekday.allCases.count
     }

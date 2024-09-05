@@ -218,7 +218,7 @@
 				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
 				621FDB3A2C82FAC3003804AE /* Shedule */,
 				621FDB392C82FAAD003804AE /* Category */,
-				621FDB412C88EFA4003804AE /* IrregularEventController.swift */,
+				621FDB432C891383003804AE /* IrregularEvent */,
 			);
 			path = CreateTrackers;
 			sourceTree = "<group>";
@@ -240,6 +240,14 @@
 				621FDB352C821D4A003804AE /* ScheduleCell.swift */,
 			);
 			path = Shedule;
+			sourceTree = "<group>";
+		};
+		621FDB432C891383003804AE /* IrregularEvent */ = {
+			isa = PBXGroup;
+			children = (
+				621FDB412C88EFA4003804AE /* IrregularEventController.swift */,
+			);
+			path = IrregularEvent;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

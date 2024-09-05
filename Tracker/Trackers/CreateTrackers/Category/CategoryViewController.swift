@@ -10,6 +10,7 @@ import UIKit
 
 final class CategoryViewController: UIViewController {
     
+    // MARK: - Properties
     weak var delegate: CategoryViewControllerDelegate?
     private var selectedCategory: String?
     
@@ -52,7 +53,7 @@ final class CategoryViewController: UIViewController {
         return tableView
     }()
     
-    //MARK: - Lifycylce
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         view.backgroundColor = .white
         super.viewDidLoad()
@@ -120,6 +121,7 @@ final class CategoryViewController: UIViewController {
 
 // MARK: - UITableViewDataSource
 extension CategoryViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories.count
     }
@@ -145,8 +147,8 @@ extension CategoryViewController: UITableViewDataSource {
     }
 }
 
-// MARK: - UITableViewDelegate
 extension CategoryViewController: UITableViewDelegate {
+    // MARK: - UITableViewDelegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedCategory = categories[indexPath.row]
         tableView.reloadData()
@@ -159,8 +161,8 @@ extension CategoryViewController: UITableViewDelegate {
     }
 }
 
-// MARK: - CategoryViewControllerDelegate
 extension CategoryViewController: CategoryViewControllerDelegate {
+    // MARK: - CategoryViewControllerDelegate
     func didCreateCategory(_ category: String) {
         categories.append(category)
         saveCategories()
