@@ -33,10 +33,8 @@ final class CreateHabitsController: UIViewController,
         
         nameTextField.delegate = self
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
-        view.addGestureRecognizer(tapGesture)
-        
         updateCreateButtonState()
+        addTapGestureToHideKeyboard()
     }
     
     // MARK: - UI Elements

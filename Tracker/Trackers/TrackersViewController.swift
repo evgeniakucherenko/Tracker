@@ -62,6 +62,7 @@ final class TrackersViewController: UIViewController,
 
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
         dateChanged()
+        addTapGestureToHideKeyboard() 
     }
 
     // MARK: - Actions
@@ -262,5 +263,14 @@ extension TrackersViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
         navigationItem.hidesSearchBarWhenScrolling = false
+    }
+}
+
+
+extension UIViewController {
+    func addTapGestureToHideKeyboard() {
+        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
     }
 }

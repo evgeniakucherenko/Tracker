@@ -20,6 +20,7 @@ final class CreateTrackerController: UIViewController {
         setupNavBar()
         setupViews()
         setupConstraints()
+        addTapGestureToHideKeyboard() 
     }
     
     // MARK: - UI Elements
