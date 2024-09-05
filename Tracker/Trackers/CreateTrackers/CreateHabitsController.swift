@@ -34,7 +34,6 @@ final class CreateHabitsController: UIViewController,
         nameTextField.delegate = self
         
         updateCreateButtonState()
-        addTapGestureToHideKeyboard()
     }
     
     // MARK: - UI Elements
@@ -244,6 +243,23 @@ extension CreateHabitsController: CategoryViewControllerDelegate & UITextFieldDe
             updateCreateButtonState()
             return false
         }
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+        
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        errorLabel.isHidden = true
+        categoryButtonTopConstraint?.constant = 8
+            
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+            
+        updateCreateButtonState()
+        return true
     }
 }
 

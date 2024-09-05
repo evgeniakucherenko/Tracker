@@ -89,4 +89,16 @@ final class CreateCategoryViewController: UIViewController, UITextFieldDelegate 
             doneButton.isEnabled = false
         }
     }
+    
+    // MARK: - UITextFieldDelegate methods
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        doneButton.update(backgroundColor: .grayColorYP)
+        doneButton.isEnabled = false
+        return true
+    }
 }

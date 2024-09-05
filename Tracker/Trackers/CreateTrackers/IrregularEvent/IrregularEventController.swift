@@ -31,9 +31,6 @@ final class IrregularEventController: UIViewController {
         setupConstraints()
         nameTextField.delegate = self
         updateCreateButtonState()
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
-        view.addGestureRecognizer(tapGesture)
     }
     
     // MARK: - UI Elements
@@ -211,6 +208,23 @@ extension IrregularEventController: CategoryViewControllerDelegate & UITextField
             updateCreateButtonState()
             return false
         }
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+        
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        errorLabel.isHidden = true
+        categoryButtonTopConstraint?.constant = 8
+            
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+            
+        updateCreateButtonState()
+        return true
     }
 }
 
