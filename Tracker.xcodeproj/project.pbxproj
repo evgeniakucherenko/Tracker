@@ -32,7 +32,9 @@
 		621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB352C821D4A003804AE /* ScheduleCell.swift */; };
 		621FDB382C82F9CB003804AE /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB372C82F9CB003804AE /* CategoryCell.swift */; };
 		621FDB3D2C84B645003804AE /* TrackerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB3C2C84B645003804AE /* TrackerCell.swift */; };
-		621FDB422C88EFA4003804AE /* IrregularEventController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB412C88EFA4003804AE /* IrregularEventController.swift */; };
+		621FDB422C88EFA4003804AE /* CreateIrregularEventController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB412C88EFA4003804AE /* CreateIrregularEventController.swift */; };
+		621FDB472C8CBF62003804AE /* Emoji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB462C8CBF62003804AE /* Emoji.swift */; };
+		621FDB492C8CC4A7003804AE /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB482C8CC4A7003804AE /* Colors.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,7 +84,9 @@
 		621FDB352C821D4A003804AE /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 		621FDB372C82F9CB003804AE /* CategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
 		621FDB3C2C84B645003804AE /* TrackerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCell.swift; sourceTree = "<group>"; };
-		621FDB412C88EFA4003804AE /* IrregularEventController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IrregularEventController.swift; sourceTree = "<group>"; };
+		621FDB412C88EFA4003804AE /* CreateIrregularEventController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateIrregularEventController.swift; sourceTree = "<group>"; };
+		621FDB462C8CBF62003804AE /* Emoji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Emoji.swift; sourceTree = "<group>"; };
+		621FDB482C8CC4A7003804AE /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -216,9 +220,11 @@
 			children = (
 				621FDB1F2C80C609003804AE /* CreateTrackerController.swift */,
 				621FDB262C80DEA6003804AE /* CreateHabitsController.swift */,
+				621FDB412C88EFA4003804AE /* CreateIrregularEventController.swift */,
+				621FDB462C8CBF62003804AE /* Emoji.swift */,
+				621FDB482C8CC4A7003804AE /* Colors.swift */,
 				621FDB3A2C82FAC3003804AE /* Shedule */,
 				621FDB392C82FAAD003804AE /* Category */,
-				621FDB432C891383003804AE /* IrregularEvent */,
 			);
 			path = CreateTrackers;
 			sourceTree = "<group>";
@@ -240,14 +246,6 @@
 				621FDB352C821D4A003804AE /* ScheduleCell.swift */,
 			);
 			path = Shedule;
-			sourceTree = "<group>";
-		};
-		621FDB432C891383003804AE /* IrregularEvent */ = {
-			isa = PBXGroup;
-			children = (
-				621FDB412C88EFA4003804AE /* IrregularEventController.swift */,
-			);
-			path = IrregularEvent;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -380,12 +378,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				621FDB2B2C80EE3E003804AE /* CustomTextField.swift in Sources */,
+				621FDB492C8CC4A7003804AE /* Colors.swift in Sources */,
 				621FDAE32C7B520D003804AE /* TrackersViewController.swift in Sources */,
 				621FDB272C80DEA6003804AE /* CreateHabitsController.swift in Sources */,
 				621FDB342C81F9D6003804AE /* ScheduleViewController.swift in Sources */,
 				621FDB152C7DB6F6003804AE /* LaunchViewController.swift in Sources */,
 				621FDB2F2C81E89D003804AE /* CategoryViewController.swift in Sources */,
-				621FDB422C88EFA4003804AE /* IrregularEventController.swift in Sources */,
+				621FDB422C88EFA4003804AE /* CreateIrregularEventController.swift in Sources */,
 				621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */,
 				621FDB222C80CA3D003804AE /* СustomButton.swift in Sources */,
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,
@@ -394,6 +393,7 @@
 				621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */,
 				621FDB312C81F1E8003804AE /* CreateCategoryViewController.swift in Sources */,
 				621FDB202C80C609003804AE /* CreateTrackerController.swift in Sources */,
+				621FDB472C8CBF62003804AE /* Emoji.swift in Sources */,
 				621FDB292C80E425003804AE /* TitlePopup .swift in Sources */,
 				621FDB112C7C9D54003804AE /* StatViewController.swift in Sources */,
 				621FDB2D2C81D5EA003804AE /* CustomSelectionButton.swift in Sources */,

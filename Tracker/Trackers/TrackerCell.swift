@@ -98,6 +98,7 @@ class TrackerCell: UICollectionViewCell {
         daysLabel.text = "\(days) \(pluralizeDay(days))"
         emojiLabel.text = emoji
         cardImageView.backgroundColor = color
+        plusButton.backgroundColor = color
         categoryLabel.text = category
         categoryLabel.isHidden = false
         categoryLabel.textColor = isRepeatedCategory ? .white : .black

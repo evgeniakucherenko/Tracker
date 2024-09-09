@@ -20,6 +20,13 @@ final class IrregularEventController: UIViewController {
     private var trackerRecords: [TrackerRecord] = []
     private var selectedCategory: String?
     private var categoryButtonTopConstraint: NSLayoutConstraint?
+    private var selectedEmoji: String?
+    private var selectedColor: UIColor?
+    
+    private let emojiCollectionView = EmojiCollectionView()
+    private let colorsCollectionView = ColorsCollectionView()
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -28,8 +35,11 @@ final class IrregularEventController: UIViewController {
         
         setupNavBar()
         setupViews()
+        setupScrollView()
         setupConstraints()
         nameTextField.delegate = self
+        
+        setupCollectionViewCallbacks() 
         updateCreateButtonState()
     }
     
@@ -96,8 +106,21 @@ final class IrregularEventController: UIViewController {
     }
 
     private func setupViews() {
-        [cancelButton,createButton,nameTextField,errorLabel, categoryButton].forEach {
-            view.addSubview($0)
+        [cancelButton,createButton,nameTextField,errorLabel,
+         categoryButton, emojiCollectionView, colorsCollectionView].forEach {
+            contentView.addSubview($0)
+        }
+    }
+    
+    private func setupCollectionViewCallbacks() {
+        emojiCollectionView.onEmojiSelected = { [weak self] emoji in
+            self?.selectedEmoji = emoji
+            self?.updateCreateButtonState()
+        }
+        
+        colorsCollectionView.onColorSelected = { [weak self] color in
+            self?.selectedColor = color
+            self?.updateCreateButtonState()
         }
     }
 
@@ -105,8 +128,10 @@ final class IrregularEventController: UIViewController {
     private func updateCreateButtonState() {
         let isNameFilled = !(nameTextField.text?.isEmpty ?? true)
         let isCategorySelected = selectedCategory != nil
+        let isEmojiSelected = selectedEmoji != nil
+        let isColorSelected = selectedColor != nil
 
-        if isNameFilled && isCategorySelected {
+        if isNameFilled && isCategorySelected && isEmojiSelected && isColorSelected {
             createButton.backgroundColor = .blackYP
             createButton.isEnabled = true
         } else {
@@ -119,12 +144,14 @@ final class IrregularEventController: UIViewController {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else {
             return
         }
+        
+        guard let selectedEmoji = selectedEmoji, let selectedColor = selectedColor else { return }
 
         let tracker = Tracker(
             id: UUID(),
             name: trackerName,
-            color: .selection14,
-            emoji: "🍒",
+            color: selectedColor,
+            emoji: selectedEmoji,
             schedule: []
         )
 
@@ -230,35 +257,72 @@ extension IrregularEventController: CategoryViewControllerDelegate & UITextField
 
 extension IrregularEventController{
     // MARK: - Layout
+    private func setupScrollView() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+        ])
+    }
+    
     private func setupConstraints() {
 
         categoryButtonTopConstraint = categoryButton.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 8)
-
+        
+        emojiCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        colorsCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
-            cancelButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            cancelButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -8),
             cancelButton.heightAnchor.constraint(equalToConstant: 60),
-            cancelButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            cancelButton.topAnchor.constraint(equalTo: colorsCollectionView.bottomAnchor, constant: 40),
             cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor),
+            cancelButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
 
-            createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            createButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             createButton.heightAnchor.constraint(equalToConstant: 60),
-            createButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            createButton.topAnchor.constraint(equalTo: colorsCollectionView.bottomAnchor, constant: 40),
+            createButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
 
-            nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            nameTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
+            nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            nameTextField.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 24),
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
 
             errorLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 8),
-            errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            errorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            errorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             errorLabel.heightAnchor.constraint(equalToConstant: 22),
 
-            categoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            categoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            categoryButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            categoryButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             categoryButtonTopConstraint!,
-            categoryButton.heightAnchor.constraint(equalToConstant: 75)
+            categoryButton.heightAnchor.constraint(equalToConstant: 75),
+
+            emojiCollectionView.topAnchor.constraint(equalTo: categoryButton.bottomAnchor, constant: 32),
+            emojiCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
+            emojiCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
+            emojiCollectionView.heightAnchor.constraint(equalToConstant: 250),
+
+            colorsCollectionView.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
+            colorsCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
+            colorsCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
+            colorsCollectionView.heightAnchor.constraint(equalToConstant: 250)
         ])
     }
 }

@@ -15,6 +15,8 @@ final class TrackersViewController: UIViewController,
     var categories: [TrackerCategory] = []
     var completedTrackers: Set<UUID> = []
     private var trackers: [Tracker] = []
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
 
     private var currentDate: Date {
         return datePicker.date
@@ -58,11 +60,12 @@ final class TrackersViewController: UIViewController,
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        setupScrollView()
         setupUI()
 
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
         dateChanged()
-//        addTapGestureToHideKeyboard() 
+
     }
 
     // MARK: - Actions
@@ -211,12 +214,34 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout,
 
 // MARK: - Setup UI
 extension TrackersViewController {
+    
+    private func setupScrollView() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+        ])
+    }
 
     private func setupUI() {
         setupNavBar()
 
         [placeholderImage, labelImage, datePicker, collectionView].forEach {
-            view.addSubview($0)
+            contentView.addSubview($0)
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
 
@@ -224,17 +249,24 @@ extension TrackersViewController {
         collectionView.delegate = self
         collectionView.register(TrackerCell.self, forCellWithReuseIdentifier: TrackerCell.reuseIdentifier)
 
+        
+        let contentViewHeightConstraint = contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
+        contentViewHeightConstraint.priority = .defaultLow
+        
+        
         NSLayoutConstraint.activate([
-            placeholderImage.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -246),
-            placeholderImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            placeholderImage.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            placeholderImage.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 
             labelImage.topAnchor.constraint(equalTo: placeholderImage.bottomAnchor, constant: 8),
-            labelImage.centerXAnchor.constraint(equalTo: placeholderImage.centerXAnchor),
+            labelImage.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
 
-            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            collectionView.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor),
+            
+            contentViewHeightConstraint
         ])
     }
 
