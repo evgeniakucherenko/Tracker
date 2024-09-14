@@ -8,14 +8,17 @@
 import Foundation
 import UIKit
 
-class TrackerCell: UICollectionViewCell {
+final class TrackerCell: UICollectionViewCell, UIContextMenuInteractionDelegate {
     
     // MARK: - Public Properties
     static let reuseIdentifier = "TrackerCell"
     var onCompletionToggle: (() -> Void)?
+    var onDelete: (() -> Void)?
+    var onPin: (() -> Void)?
+    var onEdit: (() -> Void)?
     
     // MARK: - UI-elements
-    private let categoryLabel: UILabel = {
+    let categoryLabel: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 19)
         label.textColor = .blackYP
@@ -23,7 +26,7 @@ class TrackerCell: UICollectionViewCell {
         return label
     }()
     
-    private let titleLabel: UILabel = {
+    let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .whiteYP
@@ -32,21 +35,25 @@ class TrackerCell: UICollectionViewCell {
         return label
     }()
     
-    private lazy var cardImageView: UIView = {
+    lazy var cardImageView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
+
+        let interaction = UIContextMenuInteraction(delegate: self)
+        view.addInteraction(interaction)
+        
         return view
     }()
     
-    private lazy var emojiBackgroundView: UIView = {
+    lazy var emojiBackgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(white: 1.0, alpha: 0.3)
         view.layer.cornerRadius = 12
         return view
     }()
 
-    private let emojiLabel: UILabel = {
+    let emojiLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12)
         return label
@@ -61,7 +68,7 @@ class TrackerCell: UICollectionViewCell {
     
     private lazy var plusButton: UIButton = {
         let button = UIButton(type: .system)
-        let config = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium) //
+        let config = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
         let image = UIImage(systemName: "plus", withConfiguration: config)
         button.setImage(image, for: .normal)
         button.tintColor = .white
@@ -92,6 +99,26 @@ class TrackerCell: UICollectionViewCell {
         setupConstraints()
     }
 
+    // MARK: - Context Menu Interaction Delegate
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+
+            let pinAction = UIAction(title: "Закрепить") { _ in
+                self.onPin?()
+            }
+            
+            let editAction = UIAction(title: "Редактировать") { _ in
+                self.onEdit?()
+            }
+            
+            let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
+                self.onDelete?()
+            }
+            
+            return UIMenu(title: "", children: [pinAction, editAction, deleteAction])
+        }
+    }
+
     // MARK: - Configure Cell
     func configure(with title: String, days: Int, category: String, emoji: String, color: UIColor, isRepeatedCategory: Bool, isCompleted: Bool) {
         titleLabel.text = title
@@ -120,16 +147,20 @@ class TrackerCell: UICollectionViewCell {
             return "дней"
         }
     }
-
+    
     private func updateButtonAppearance(isCompleted: Bool) {
         let config = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
         let image = UIImage(systemName: isCompleted ? "checkmark" : "plus", withConfiguration: config)
         plusButton.setImage(image, for: .normal)
         plusButton.alpha = isCompleted ? 0.3 : 1.0
+        plusButton.isEnabled = !isCompleted
     }
-    
+
     // MARK: - Actions
     @objc private func plusButtonTapped() {
+        if !plusButton.isEnabled {
+            return
+        }
         onCompletionToggle?()
     }
 }
@@ -139,10 +170,13 @@ extension TrackerCell {
     
     private func setupViews() {
         self.addSubview(categoryLabel)
-        cardImageView.addSubview(titleLabel)
         
-        [cardImageView,emojiBackgroundView,
-         emojiLabel,plusButton,daysLabel,cardQuantityManagementView].forEach {
+        [titleLabel,emojiBackgroundView, emojiLabel].forEach {
+            cardImageView.addSubview($0)
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        [cardImageView, plusButton, daysLabel, cardQuantityManagementView].forEach {
             contentView.addSubview($0)
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
@@ -158,7 +192,6 @@ extension TrackerCell {
             cardImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             cardImageView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             cardImageView.heightAnchor.constraint(equalToConstant: 90),
-            cardImageView.widthAnchor.constraint(equalToConstant: 300),
             
             cardQuantityManagementView.heightAnchor.constraint(equalToConstant: 58),
             cardQuantityManagementView.topAnchor.constraint(equalTo: cardImageView.bottomAnchor),

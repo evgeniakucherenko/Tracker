@@ -53,8 +53,8 @@ class CategoryCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(with category: String, isSelected: Bool, isFirst: Bool, isLast: Bool, isSingleItem: Bool) {
-        customTextField.text = category
+    func configure(with category: TrackerCategory, isSelected: Bool, isFirst: Bool, isLast: Bool, isSingleItem: Bool) {
+        customTextField.text = category.title
 
         if isSelected {
             accessoryView = UIImageView(image: UIImage(named: "check_icon"))

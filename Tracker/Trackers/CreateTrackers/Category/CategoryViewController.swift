@@ -12,9 +12,10 @@ final class CategoryViewController: UIViewController {
     
     // MARK: - Properties
     weak var delegate: CategoryViewControllerDelegate?
-    private var selectedCategory: String?
+    private var selectedCategory: TrackerCategory?
+    private let categoryStore = TrackerCategoryStore()
     
-    private var categories: [String] = [] {
+    private var categories: [TrackerCategory] = [] {
         didSet {
             tableView.isHidden = categories.isEmpty
             placeholderImage.isHidden = !categories.isEmpty
@@ -59,9 +60,9 @@ final class CategoryViewController: UIViewController {
         super.viewDidLoad()
         
         setupNavBar()
+        loadCategories()
         setupViews()
         setupConstraints()
-        loadCategories()
     }
     
     // MARK: - Setup Methods
@@ -107,15 +108,78 @@ final class CategoryViewController: UIViewController {
         present(navController, animated: true, completion: nil)
     }
     
-    // MARK: - Private Methods (User Defaults)
-    private func saveCategories() {
-        UserDefaults.standard.set(categories, forKey: "savedCategories")
+    // MARK: - Core Data
+    private func loadCategories() {
+        do {
+            let fetchedCategories = try categoryStore.fetchAllCategories()
+            self.categories = fetchedCategories.map { categoryStore.convertToTrackerCategory(from: $0) }
+            self.tableView.reloadData()
+        } catch {
+            print("Ошибка при загрузке категорий: \(error)")
+        }
     }
     
-    private func loadCategories() {
-        if let savedCategories = UserDefaults.standard.array(forKey: "savedCategories") as? [String] {
-            categories = savedCategories
+    // MARK: - Delete & Edit a category
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+           
+            let category = categories[indexPath.row]
+           
+            let config = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+               
+               let editAction = UIAction(title: "Редактировать") { _ in
+                   self.showEditCategoryScreen(for: category)
+               }
+               
+               let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
+                   self.confirmDeleteCategory(category, at: indexPath)
+               }
+               
+               return UIMenu(title: "", children: [editAction, deleteAction])
+           }
+        
+           return config
+       }
+    
+    private func confirmDeleteCategory(_ category: TrackerCategory, at indexPath: IndexPath) {
+        let alert = UIAlertController(title: nil, message: "Эта категория точно не нужна?", preferredStyle: .actionSheet)
+        
+        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+            self.deleteCategory(category, at: indexPath)
         }
+        
+        let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        if let popoverController = alert.popoverPresentationController {
+            popoverController.sourceView = self.view
+            popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.maxY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
+        }
+
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func deleteCategory(_ category: TrackerCategory, at indexPath: IndexPath) {
+        let categoryStore = TrackerCategoryStore()
+        
+        do {
+            if let coreDataCategory = try categoryStore.fetchCategory(byTitle: category.title) {
+                try categoryStore.deleteCategory(coreDataCategory)
+                categories.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+            }
+        } catch {
+            print("Ошибка при удалении категории: \(error)")
+        }
+    }
+    
+    private func showEditCategoryScreen(for category: TrackerCategory) {
+        let editCategoryVC = CreateCategoryViewController() // Здесь будет контроллер для редактирования 
+        editCategoryVC.delegate = self
+        let navController = UINavigationController(rootViewController: editCategoryVC)
+        present(navController, animated: true, completion: nil)
     }
 }
 
@@ -136,7 +200,7 @@ extension CategoryViewController: UITableViewDataSource {
         }
         
         let category = categories[indexPath.row]
-        let isSelected = category == selectedCategory
+        let isSelected = category.title == selectedCategory?.title
         let isFirst = indexPath.row == 0
         let isLast = indexPath.row == categories.count - 1
         
@@ -153,7 +217,7 @@ extension CategoryViewController: UITableViewDelegate {
         selectedCategory = categories[indexPath.row]
         tableView.reloadData()
             
-        delegate?.didCreateCategory(selectedCategory ?? "")
+        delegate?.didCreateCategory(selectedCategory?.title ?? "")
             
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { 
             self.dismiss(animated: true, completion: nil)
@@ -164,11 +228,26 @@ extension CategoryViewController: UITableViewDelegate {
 extension CategoryViewController: CategoryViewControllerDelegate {
     // MARK: - CategoryViewControllerDelegate
     func didCreateCategory(_ category: String) {
-        categories.append(category)
-        saveCategories()
-        tableView.reloadData()
+        
+        if categories.contains(where: { $0.title.lowercased() == category.lowercased() }) {
+            print("Категория с таким названием уже существует")
+            dismiss(animated: true, completion: nil)
+            return
+        }
+        
+        let newCategory = TrackerCategory(title: category, trackers: [])
+        
+        do {
+            try categoryStore.addCategory(newCategory)
+            
+            self.categories.append(newCategory)
+            self.tableView.reloadData()
+        } catch {
+            print("Ошибка при сохранении категории: \(error)")
+        }
     }
 }
+
 
 
 
