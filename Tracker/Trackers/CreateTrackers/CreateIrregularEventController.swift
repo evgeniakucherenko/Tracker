@@ -8,14 +8,11 @@
 import Foundation
 import UIKit
 
-protocol IrregularEventControllerDelegate: AnyObject {
-    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String)
-}
 
 final class IrregularEventController: UIViewController {
     
     // MARK: - Properties
-    weak var delegate: IrregularEventControllerDelegate?
+    weak var irregularEventDelegate: IrregularEventControllerDelegate?
     
     private var trackerRecords: [TrackerRecord] = []
     private var selectedCategory: String?
@@ -27,6 +24,17 @@ final class IrregularEventController: UIViewController {
     private let colorsCollectionView = ColorsCollectionView()
     private let scrollView = UIScrollView()
     private let contentView = UIView()
+    
+    private var categoryStore: TrackerCategoryStoreProtocol
+
+    init(categoryStore: TrackerCategoryStoreProtocol) {
+        self.categoryStore = categoryStore
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -160,7 +168,7 @@ final class IrregularEventController: UIViewController {
 
         saveTrackerRecord(trackerRecord)
 
-        delegate?.didCreateIrregularEvent(tracker, inCategory: selectedCategory ?? "Без категории")
+        irregularEventDelegate?.didCreateIrregularEvent(tracker, inCategory: selectedCategory ?? "Без категории")
         closeModalAndSwitchToTab(index: 0)
     }
     
@@ -173,7 +181,7 @@ final class IrregularEventController: UIViewController {
     }
 
     @objc private func categoryButtonTapped() {
-        let categoryViewController = CategoryViewController()
+        let categoryViewController = CategoryViewController(categoryStore: categoryStore)
         categoryViewController.delegate = self
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet
@@ -197,10 +205,10 @@ final class IrregularEventController: UIViewController {
 }
 
 // MARK: - CategoryViewControllerDelegate & UITextFieldDelegate
-extension IrregularEventController: CategoryViewControllerDelegate & UITextFieldDelegate {
-    func didCreateCategory(_ category: String) {
-        selectedCategory = category
-        categoryButton.update(title: "Категория", subtitle: category)
+extension IrregularEventController: CategorySelectionDelegate & UITextFieldDelegate {
+    func didSelectCategory(_ categoryName: String) {
+        selectedCategory = categoryName
+        categoryButton.update(title: "Категория", subtitle: categoryName)
         updateCreateButtonState()
     }
 

@@ -40,6 +40,8 @@
 		621FDB502C90724D003804AE /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB4F2C90724D003804AE /* UIColor.swift */; };
 		621FDB522C90CA75003804AE /* TrackerRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB512C90CA75003804AE /* TrackerRecordStore.swift */; };
 		621FDB542C90CB77003804AE /* TrackerCategoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDB532C90CB77003804AE /* TrackerCategoryStore.swift */; };
+		6262C3E32C9733210079AEF7 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6262C3E22C9733210079AEF7 /* Protocols.swift */; };
+		6262C3E52C9994AB0079AEF7 /* Weekday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6262C3E42C9994AB0079AEF7 /* Weekday.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,6 +99,8 @@
 		621FDB4F2C90724D003804AE /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		621FDB512C90CA75003804AE /* TrackerRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecordStore.swift; sourceTree = "<group>"; };
 		621FDB532C90CB77003804AE /* TrackerCategoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryStore.swift; sourceTree = "<group>"; };
+		6262C3E22C9733210079AEF7 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
+		6262C3E42C9994AB0079AEF7 /* Weekday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weekday.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +128,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6217DE032C9B0A190018A16F /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				6262C3E22C9733210079AEF7 /* Protocols.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		621FDAD22C7B520D003804AE = {
 			isa = PBXGroup;
 			children = (
@@ -148,13 +160,14 @@
 		621FDADD2C7B520D003804AE /* Tracker */ = {
 			isa = PBXGroup;
 			children = (
+				6217DE032C9B0A190018A16F /* Helpers */,
 				621FDB552C95A5D3003804AE /* Store */,
 				621FDB1E2C80BE71003804AE /* Trackers */,
 				621FDB162C80BB36003804AE /* Models */,
-				621FDB562C95A60E003804AE /* Extensions */,
 				621FDB242C80DA01003804AE /* Navigation */,
-				621FDB252C80DA63003804AE /* Onboarding */,
 				621FDB232C80CB89003804AE /* UI-Elements */,
+				621FDB562C95A60E003804AE /* Extensions */,
+				621FDB252C80DA63003804AE /* Onboarding */,
 				621FDADE2C7B520D003804AE /* AppDelegate.swift */,
 				621FDAE02C7B520D003804AE /* SceneDelegate.swift */,
 				621FDAE72C7B520F003804AE /* Assets.xcassets */,
@@ -275,6 +288,7 @@
 			isa = PBXGroup;
 			children = (
 				621FDB4F2C90724D003804AE /* UIColor.swift */,
+				6262C3E42C9994AB0079AEF7 /* Weekday.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -423,9 +437,11 @@
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,
 				621FDADF2C7B520D003804AE /* AppDelegate.swift in Sources */,
 				621FDB3D2C84B645003804AE /* TrackerCell.swift in Sources */,
+				6262C3E32C9733210079AEF7 /* Protocols.swift in Sources */,
 				621FDB1D2C80BB76003804AE /* TrackerRecord.swift in Sources */,
 				621FDB312C81F1E8003804AE /* CreateCategoryViewController.swift in Sources */,
 				621FDB202C80C609003804AE /* CreateTrackerController.swift in Sources */,
+				6262C3E52C9994AB0079AEF7 /* Weekday.swift in Sources */,
 				621FDB522C90CA75003804AE /* TrackerRecordStore.swift in Sources */,
 				621FDB472C8CBF62003804AE /* Emoji.swift in Sources */,
 				621FDB292C80E425003804AE /* TitlePopup .swift in Sources */,

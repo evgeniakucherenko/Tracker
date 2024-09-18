@@ -8,14 +8,10 @@
 import Foundation
 import UIKit
 
-protocol CategoryViewControllerDelegate: AnyObject {
-    func didCreateCategory(_ category: String)
-}
-
 final class CreateCategoryViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Properties
-    weak var delegate: CategoryViewControllerDelegate?
+    weak var delegate: CategoryCreationDelegate?
     
     //MARK: - UI Elements
     private lazy var categoryTextField: CustomTextField = {

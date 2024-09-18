@@ -8,15 +8,12 @@
 import Foundation
 import UIKit
 
-protocol CreateHabitsControllerDelegate: AnyObject {
-    func didCreateTracker(_ tracker: Tracker, inCategory category: String)
-}
-
 final class CreateHabitsController: UIViewController,
                                     ScheduleViewControllerDelegate {
     
     // MARK: - Properties
-    weak var delegate: CreateHabitsControllerDelegate?
+    weak var delegate: CategorySelectionDelegate?
+    weak var createHabitsDelegate: CreateHabitsControllerDelegate?
     
     private var selectedDays: Set<Weekday> = []
     private var selectedCategory: String?
@@ -28,7 +25,18 @@ final class CreateHabitsController: UIViewController,
     private let colorsCollectionView = ColorsCollectionView()
     private let scrollView = UIScrollView()
     private let contentView = UIView()
-       
+    
+    private var categoryStore: TrackerCategoryStoreProtocol
+
+    init(categoryStore: TrackerCategoryStoreProtocol) {
+        self.categoryStore = categoryStore
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -165,6 +173,9 @@ final class CreateHabitsController: UIViewController,
         }
         
         guard let selectedEmoji = selectedEmoji, let selectedColor = selectedColor else { return }
+        
+        
+        guard let selectedCategory = selectedCategory else { return }
 
         let tracker = Tracker(
             id: UUID(),
@@ -174,7 +185,7 @@ final class CreateHabitsController: UIViewController,
             schedule: selectedDays
         )
 
-        delegate?.didCreateTracker(tracker, inCategory: selectedCategory ?? "Без категории")
+        createHabitsDelegate?.didCreateTracker(tracker, inCategory: selectedCategory)
         closeModalAndSwitchToTab(index: 0)
     }
     
@@ -183,8 +194,8 @@ final class CreateHabitsController: UIViewController,
     }
     
     @objc private func categoryButtonTapped() {
-        let categoryViewController = CategoryViewController()
-        categoryViewController.delegate = self
+        let categoryViewController = CategoryViewController(categoryStore: categoryStore)
+        categoryViewController.delegate = self 
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
@@ -192,7 +203,7 @@ final class CreateHabitsController: UIViewController,
        
     @objc private func scheduleButtonTapped() {
         let scheduleViewController = ScheduleViewController(selectedDays: selectedDays)
-        scheduleViewController.delegate = self
+        scheduleViewController.scheduleDelegate = self
         let navController = UINavigationController(rootViewController: scheduleViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
@@ -228,11 +239,11 @@ final class CreateHabitsController: UIViewController,
     }
 }
 
-extension CreateHabitsController: CategoryViewControllerDelegate & UITextFieldDelegate {
+extension CreateHabitsController: CategorySelectionDelegate & UITextFieldDelegate {
     
-    func didCreateCategory(_ category: String) {
-        selectedCategory = category
-        categoryButton.update(title: "Категория", subtitle: category)
+    func didSelectCategory(_ categoryName: String) {
+        selectedCategory = categoryName
+        categoryButton.update(title: "Категория", subtitle: categoryName)
         updateCreateButtonState()
     }
     

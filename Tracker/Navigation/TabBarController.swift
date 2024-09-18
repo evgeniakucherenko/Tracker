@@ -17,12 +17,19 @@ final class TabBarController: UITabBarController {
         view.backgroundColor = .white
         tabBar.isTranslucent = false
 
-        let trackerViewController = TrackersViewController()
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let trackerRecordStore = TrackerRecordStore(context: context)
+        let trackerStore = TrackerStore(context: context, trackerRecordStore: trackerRecordStore)
+        let categoryStore = TrackerCategoryStore(context: context)
+
+        let trackerViewController = TrackersViewController(trackerStore: trackerStore, categoryStore: categoryStore)
         let statisticsViewController = StatViewController()
+        
         let navigationController = UINavigationController(rootViewController: trackerViewController)
 
         trackerViewController.tabBarItem = UITabBarItem(title: "Трекеры", image: UIImage(named: "trackers_icon"), tag: 0)
         statisticsViewController.tabBarItem = UITabBarItem(title: "Статистика", image: UIImage(named: "stats_icon"), tag: 1)
+
         self.viewControllers = [navigationController, statisticsViewController]
         self.addTopBorder(color: UIColor.gray, thickness: 0.5)
     }

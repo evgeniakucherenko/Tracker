@@ -10,15 +10,19 @@ import UIKit
 
 extension UIColor {
     
-    private static let colorMapping: [String: UIColor] = {
-        var mapping = [String: UIColor]()
-        for i in 1...16 {
-            if let color = UIColor(named: "selection_\(i)") {
-                mapping["selection_\(i)"] = color
-            }
-        }
-        return mapping
-    }()
+    convenience init?(hexString: String) {
+        var hexSanitized = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.hasPrefix("#") ? String(hexSanitized.dropFirst()) : hexSanitized
+
+        var rgb: UInt64 = 0
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+    }
     
     var colorName: String? {
         for (name, color) in UIColor.colorMapping {
@@ -44,20 +48,16 @@ extension UIColor {
         return String(format: "#%06x", rgb)
     }
     
-    convenience init?(hexString: String) {
-        var hexSanitized = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
-        hexSanitized = hexSanitized.hasPrefix("#") ? String(hexSanitized.dropFirst()) : hexSanitized
-
-        var rgb: UInt64 = 0
-        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
-
-        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
-        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
-        let blue = CGFloat(rgb & 0x0000FF) / 255.0
-
-        self.init(red: red, green: green, blue: blue, alpha: 1.0)
-    }
-
+    private static let colorMapping: [String: UIColor] = {
+        var mapping = [String: UIColor]()
+        for i in 1...16 {
+            if let color = UIColor(named: "selection_\(i)") {
+                mapping["selection_\(i)"] = color
+            }
+        }
+        return mapping
+    }()
+    
     private func isEqualToColor(_ otherColor: UIColor) -> Bool {
         var red1: CGFloat = 0
         var green1: CGFloat = 0
@@ -74,3 +74,5 @@ extension UIColor {
         return red1 == red2 && green1 == green2 && blue1 == blue2 && alpha1 == alpha2
     }
 }
+
+

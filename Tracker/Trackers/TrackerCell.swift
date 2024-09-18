@@ -155,6 +155,7 @@ final class TrackerCell: UICollectionViewCell, UIContextMenuInteractionDelegate 
         plusButton.alpha = isCompleted ? 0.3 : 1.0
         plusButton.isEnabled = !isCompleted
     }
+    
 
     // MARK: - Actions
     @objc private func plusButtonTapped() {
