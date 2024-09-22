@@ -14,53 +14,163 @@ final class TrackerCategoryStore: NSObject,
 
     // MARK: - Properties
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>!
+    private var fetchedResultsController: NSFetchedResultsController<NSManagedObject>?
     private var onChangeCallback: (() -> Void)?
-    
-    init(context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext) {
+    private let entityName = "TrackerCategoryCoreData"
+
+    // MARK: - Initialization
+    init(context: NSManagedObjectContext) {
         self.context = context
         super.init()
         setupFetchedResultsController()
     }
 
-    // MARK: - Fetch Methods
+    // MARK: - Public Methods
     func fetchAllCategories() throws -> [TrackerCategory] {
-        guard let fetchedCategories = fetchedResultsController.fetchedObjects else {
+        guard let fetchedCategories = fetchedResultsController?.fetchedObjects else {
             throw NSError(domain: "FetchError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Ошибка загрузки категорий"])
         }
-        return fetchedCategories.map { convertToTrackerCategory(from: $0) }
+        return fetchedCategories.compactMap { convertToTrackerCategory(from: $0) }
     }
 
-    func fetchCategory(byTitle title: String) throws -> TrackerCategoryCoreData? {
-        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "title == %@", title)
-        let result = try context.fetch(fetchRequest)
-        print("[TrackeсCategoryStore - fetch] Метод сработал")
-        return result.first
+    func fetchCategory(byTitle title: String) throws -> TrackerCategory? {
+        let categories = try fetchAllCategories()
+        return categories.first { $0.title == title }
     }
+    
+    func addCategory(_ category: TrackerCategory) throws {
+        if let existingCategory = try fetchCategory(byTitle: category.title) {
 
-    // MARK: - FetchedResultsController Setup
-    private func setupFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+            let updatedTrackers = existingCategory.trackers + category.trackers
+            let updatedCategory = TrackerCategory(title: existingCategory.title, trackers: updatedTrackers)
+            
+            try updateCategory(updatedCategory)
+        } else {
+            try addCategoryToCoreData(category)
+        }
         
+        try saveContext()
+        notifyChanges()
+    }
+
+    func deleteCategory(_ category: TrackerCategory) throws {
+        guard let categoryObject = try fetchCategoryEntity(byTitle: category.title) else { return }
+        context.delete(categoryObject)
+        try saveContext()
+        notifyChanges()
+    }
+
+    func updateCategory(_ category: TrackerCategory) throws {
+        guard let categoryObject = try fetchCategoryEntity(byTitle: category.title) else {
+            try addCategoryToCoreData(category)
+            notifyChanges()
+            return
+        }
+        
+        configure(categoryObject, with: category)
+        try saveContext()
+        notifyChanges()
+    }
+
+    // MARK: - Private Methods
+    private func setupFetchedResultsController() {
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+
         fetchedResultsController = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        
-        fetchedResultsController.delegate = self
-        
+
+        fetchedResultsController?.delegate = self
+
         do {
-            try fetchedResultsController.performFetch()
+            try fetchedResultsController?.performFetch()
         } catch {
             print("Ошибка выполнения запроса: \(error)")
         }
     }
+    
+    private func addCategoryToCoreData(_ category: TrackerCategory) throws {
+        guard let entityDescription = NSEntityDescription.entity(forEntityName: entityName, in: context) else {
+            throw NSError(domain: "TrackerCategoryStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "Не удалось найти описание сущности"])
+        }
+        let categoryObject = NSManagedObject(entity: entityDescription, insertInto: context)
+        configure(categoryObject, with: category)
 
-    // MARK: - Core Data Save
+        try saveContext()
+    }
+    
+    private func configure(_ categoryObject: NSManagedObject, with category: TrackerCategory) {
+        categoryObject.setValue(category.title, forKey: "title")
+
+        let trackersSet = categoryObject.mutableSetValue(forKey: "trackers")
+        trackersSet.removeAllObjects()
+        for tracker in category.trackers {
+            let trackerObject = createTrackerObject(from: tracker)
+            trackersSet.add(trackerObject)
+        }
+    }
+
+    private func createTrackerObject(from tracker: Tracker) -> NSManagedObject {
+        let entityName = "TrackerCoreData"
+        guard let entityDescription = NSEntityDescription.entity(forEntityName: entityName, in: context) else {
+            fatalError("Не удалось найти описание сущности \(entityName)")
+        }
+        let trackerObject = NSManagedObject(entity: entityDescription, insertInto: context)
+        configureTracker(trackerObject, with: tracker)
+        return trackerObject
+    }
+
+    private func configureTracker(_ trackerObject: NSManagedObject, with tracker: Tracker) {
+        trackerObject.setValue(tracker.id, forKey: "id")
+        trackerObject.setValue(tracker.name, forKey: "name")
+        trackerObject.setValue(tracker.emoji, forKey: "emoji")
+        trackerObject.setValue(tracker.color.hexString, forKey: "color")
+        let encoder = JSONEncoder()
+        if let scheduleData = try? encoder.encode(tracker.schedule) {
+            trackerObject.setValue(scheduleData, forKey: "schedule")
+        }
+    }
+
+    private func convertToTrackerCategory(from categoryObject: NSManagedObject) -> TrackerCategory? {
+        guard let title = categoryObject.value(forKey: "title") as? String else {
+            return nil
+        }
+
+        let trackersSet = categoryObject.mutableSetValue(forKey: "trackers")
+        let trackers = trackersSet.compactMap { trackerObject -> Tracker? in
+            return convertToTracker(from: trackerObject as? NSManagedObject)
+        }
+
+        return TrackerCategory(title: title, trackers: trackers)
+    }
+
+    private func convertToTracker(from trackerObject: NSManagedObject?) -> Tracker? {
+        guard let trackerObject = trackerObject else { return nil }
+        guard let id = trackerObject.value(forKey: "id") as? UUID,
+              let name = trackerObject.value(forKey: "name") as? String,
+              let emoji = trackerObject.value(forKey: "emoji") as? String,
+              let colorHex = trackerObject.value(forKey: "color") as? String,
+              let color = UIColor(hexString: colorHex),
+              let scheduleData = trackerObject.value(forKey: "schedule") as? Data else {
+            return nil
+        }
+
+        let schedule = (try? JSONDecoder().decode(Set<Weekday>.self, from: scheduleData)) ?? []
+
+        return Tracker(id: id, name: name, color: color, emoji: emoji, schedule: schedule)
+    }
+
+    private func fetchCategoryEntity(byTitle title: String) throws -> NSManagedObject? {
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
+        fetchRequest.predicate = NSPredicate(format: "title == %@", title)
+        let result = try context.fetch(fetchRequest)
+        return result.first
+    }
+
     private func saveContext() throws {
         if context.hasChanges {
             do {
@@ -71,86 +181,7 @@ final class TrackerCategoryStore: NSObject,
             }
         }
     }
-    
-    // MARK: - Add, Delete, Update Category
-    func addCategory(_ category: TrackerCategory) throws {
-        
-        if let existingCategory = try fetchCategory(byTitle: category.title) {
-            
-            for tracker in category.trackers {
-                let trackerCoreData = TrackerCoreData(context: context)
-                configure(trackerCoreData, with: tracker)
-                existingCategory.addToTrackers(trackerCoreData)
-            }
-            
-            try saveContext()
-            return
-        }
-        
-        let categoryCoreData = TrackerCategoryCoreData(context: context)
-        categoryCoreData.title = category.title
-        
-        for tracker in category.trackers {
-            let trackerCoreData = TrackerCoreData(context: context)
-            configure(trackerCoreData, with: tracker)
-            categoryCoreData.addToTrackers(trackerCoreData)
-        }
-        
-        try saveContext()
-        notifyChanges()
-    }
-    
-    func deleteCategory(_ category: TrackerCategory) throws {
-        guard let coreDataCategory = try fetchCategory(byTitle: category.title) else { return }
-        context.delete(coreDataCategory)
-        
-        try saveContext()
-        notifyChanges()
-    }
-    
-    func updateCategory(_ category: TrackerCategory) throws {
-        guard let categoryCoreData = try fetchCategory(byTitle: category.title) else { return }
-        categoryCoreData.title = category.title
-        
-        categoryCoreData.removeFromTrackers(categoryCoreData.trackers ?? NSSet())
-        for tracker in category.trackers {
-            let trackerCoreData = TrackerCoreData(context: context)
-            configure(trackerCoreData, with: tracker)
-            categoryCoreData.addToTrackers(trackerCoreData)
-        }
-        
-        try saveContext()
-        notifyChanges()
-    }
-    
-    // MARK: - Helper Methods
-    private func configure(_ trackerCoreData: TrackerCoreData, with tracker: Tracker) {
-        trackerCoreData.id = tracker.id
-        trackerCoreData.name = tracker.name
-        trackerCoreData.emoji = tracker.emoji
-        trackerCoreData.color = tracker.color.hexString
-        let encoder = JSONEncoder()
-        do {
-            trackerCoreData.schedule = try encoder.encode(tracker.schedule)
-        } catch {
-            print("[TrackerStore] Ошибка кодирования расписания: \(error)")
-        }
-    }
 
-    func convertToTrackerCategory(from coreDataCategory: TrackerCategoryCoreData) -> TrackerCategory {
-        let trackers = (coreDataCategory.trackers?.allObjects as? [TrackerCoreData])?.map { coreDataTracker in
-            return Tracker(
-                id: coreDataTracker.id ?? UUID(),
-                name: coreDataTracker.name ?? "",
-                color: UIColor(hexString: coreDataTracker.color ?? "") ?? .black,
-                emoji: coreDataTracker.emoji ?? "",
-                schedule: (try? JSONDecoder().decode(Set<Weekday>.self, from: coreDataTracker.schedule ?? Data())) ?? []
-            )
-        } ?? []
-        return TrackerCategory(title: coreDataCategory.title ?? "", trackers: trackers)
-    }
-    
-    // MARK: - Change Handling
     private func notifyChanges() {
         onChangeCallback?()
     }
@@ -158,7 +189,7 @@ final class TrackerCategoryStore: NSObject,
     func subscribeToChanges(_ onChange: @escaping () -> Void) {
         onChangeCallback = onChange
     }
-    
+
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         notifyChanges()
     }

@@ -11,11 +11,12 @@ import CoreData
 final class TrackerStore: NSObject, 
                           TrackerStoreProtocol,
                           NSFetchedResultsControllerDelegate {
-  
+
     // MARK: - Properties
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>
+    private var fetchedResultsController: NSFetchedResultsController<NSManagedObject>
     private var onChangeCallback: (() -> Void)?
+    private let entityName = "TrackerCoreData"
     let trackerRecordStore: TrackerRecordStoreProtocol
     
     // MARK: - Initialization
@@ -23,7 +24,7 @@ final class TrackerStore: NSObject,
         self.context = context
         self.trackerRecordStore = trackerRecordStore
         
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         
         self.fetchedResultsController = NSFetchedResultsController(
@@ -46,13 +47,15 @@ final class TrackerStore: NSObject,
 
     // MARK: - Tracker Management
     func addNewTracker(_ tracker: Tracker) throws {
-        
-        let trackerCoreData = TrackerCoreData(context: context)
-        configure(trackerCoreData, with: tracker)
+        guard let entityDescription = NSEntityDescription.entity(forEntityName: entityName, in: context) else {
+            throw NSError(domain: "TrackerStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "Не удалось найти описание сущности"])
+        }
+
+        let trackerObject = NSManagedObject(entity: entityDescription, insertInto: context)
+        configure(trackerObject, with: tracker)
 
         do {
             try saveContext()
-            print("[addNewTracker] Контекст успешно сохранен.")
         } catch {
             print("[addNewTracker] Ошибка при сохранении контекста: \(error)")
             throw error
@@ -61,17 +64,17 @@ final class TrackerStore: NSObject,
     }
     
     func fetchAllTrackers() throws -> [Tracker] {
-        guard let fetchedTrackers = fetchedResultsController.fetchedObjects else {
+        guard let fetchedObjects = fetchedResultsController.fetchedObjects else {
             throw NSError(domain: "FetchError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Ошибка загрузки трекеров"])
         }
-        return fetchedTrackers.compactMap { convertToTracker(from: $0) }
+        return fetchedObjects.compactMap { convertToTracker(from: $0) }
     }
-    
-    func fetchTracker(by id: UUID) throws -> TrackerCoreData? {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+
+    func fetchTracker(by id: UUID) throws -> Tracker? {
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         let result = try context.fetch(fetchRequest)
-        return result.first
+        return result.first.flatMap { convertToTracker(from: $0) }
     }
 
     // MARK: - Tracker Completion Management
@@ -88,7 +91,6 @@ final class TrackerStore: NSObject,
             try trackerRecordStore.addTrackerRecord(newRecord)
         }
         
-        try trackerRecordStore.saveContext()
         notifyChanges()
     }
     
@@ -111,27 +113,32 @@ final class TrackerStore: NSObject,
     }
     
     // MARK: - Helper Methods
-    private func configure(_ trackerCoreData: TrackerCoreData, with tracker: Tracker) {
-        trackerCoreData.id = tracker.id
-        trackerCoreData.name = tracker.name
-        trackerCoreData.emoji = tracker.emoji
-        trackerCoreData.color = tracker.color.hexString
+    private func configure(_ trackerObject: NSManagedObject, with tracker: Tracker) {
+        trackerObject.setValue(tracker.id, forKey: "id")
+        trackerObject.setValue(tracker.name, forKey: "name")
+        trackerObject.setValue(tracker.emoji, forKey: "emoji")
+        trackerObject.setValue(tracker.color.hexString, forKey: "color")
+
         let encoder = JSONEncoder()
-        trackerCoreData.schedule = try? encoder.encode(tracker.schedule)
+        if let scheduleData = try? encoder.encode(tracker.schedule) {
+            trackerObject.setValue(scheduleData, forKey: "schedule")
+        }
     }
     
-    func convertToTracker(from coreDataTracker: TrackerCoreData) -> Tracker? {
-        guard let id = coreDataTracker.id,
-              let name = coreDataTracker.name,
-              let emoji = coreDataTracker.emoji,
-              let colorHex = coreDataTracker.color,
+    private func convertToTracker(from trackerObject: NSManagedObject) -> Tracker? {
+        guard let id = trackerObject.value(forKey: "id") as? UUID,
+              let name = trackerObject.value(forKey: "name") as? String,
+              let emoji = trackerObject.value(forKey: "emoji") as? String,
+              let colorHex = trackerObject.value(forKey: "color") as? String,
               let color = UIColor(hexString: colorHex),
-              let scheduleData = coreDataTracker.schedule else { return nil }
-        
+              let scheduleData = trackerObject.value(forKey: "schedule") as? Data else {
+            return nil
+        }
+
         let schedule = (try? JSONDecoder().decode(Set<Weekday>.self, from: scheduleData)) ?? []
         return Tracker(id: id, name: name, color: color, emoji: emoji, schedule: schedule)
     }
-    
+
     // MARK: - Change Handling
     func subscribeToChanges(_ onChange: @escaping () -> Void) {
         self.onChangeCallback = onChange
@@ -145,4 +152,5 @@ final class TrackerStore: NSObject,
         notifyChanges()
     }
 }
+
 

@@ -16,8 +16,13 @@ final class TabBarController: UITabBarController {
 
         view.backgroundColor = .white
         tabBar.isTranslucent = false
+        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            print("Не удалось получить делегат приложения.")
+            return
+        }
 
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let context = appDelegate.persistentContainer.viewContext
         let trackerRecordStore = TrackerRecordStore(context: context)
         let trackerStore = TrackerStore(context: context, trackerRecordStore: trackerRecordStore)
         let categoryStore = TrackerCategoryStore(context: context)

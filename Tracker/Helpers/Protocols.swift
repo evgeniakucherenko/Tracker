@@ -44,7 +44,7 @@ protocol ScheduleViewControllerDelegate: AnyObject {
 protocol TrackerStoreProtocol {
     func fetchAllTrackers() throws -> [Tracker]
     func addNewTracker(_ tracker: Tracker) throws
-    func fetchTracker(by id: UUID) throws -> TrackerCoreData?
+    func fetchTracker(by id: UUID) throws -> Tracker?
     func toggleTrackerCompletion(_ tracker: Tracker, on date: Date) throws
     func getCompletionCount(for tracker: Tracker) throws -> Int
     func fetchAllTrackerRecords() throws -> [TrackerRecord]
@@ -54,8 +54,6 @@ protocol TrackerStoreProtocol {
 protocol TrackerRecordStoreProtocol {
     func fetchAllTrackerRecords() throws -> [TrackerRecord]
     func addTrackerRecord(_ record: TrackerRecord) throws
-    func saveContext() throws
-    
 }
 
 protocol TrackerCategoryStoreProtocol {
@@ -64,5 +62,7 @@ protocol TrackerCategoryStoreProtocol {
     func deleteCategory(_ category: TrackerCategory) throws
     func updateCategory(_ category: TrackerCategory) throws
     func subscribeToChanges(_ onChange: @escaping () -> Void)
-    func fetchCategory(byTitle title: String) throws -> TrackerCategoryCoreData?
+    func fetchCategory(byTitle title: String) throws -> TrackerCategory?
 }
+
+

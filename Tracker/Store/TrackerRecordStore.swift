@@ -6,45 +6,54 @@
 //
 
 import CoreData
-import UIKit
 
 final class TrackerRecordStore: TrackerRecordStoreProtocol {
     
-    let context: NSManagedObjectContext
-
-    convenience init() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        self.init(context: context)
-    }
+    // MARK: - Properties
+    private let context: NSManagedObjectContext
+    private let entityName = "TrackerRecordCoreData"
 
     init(context: NSManagedObjectContext) {
         self.context = context
     }
 
-    // MARK: - Tracker Record Management
+    // MARK: - Public Methods
     func fetchAllTrackerRecords() throws -> [TrackerRecord] {
-        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-        let trackerRecordCoreDataList = try context.fetch(fetchRequest)
-        return trackerRecordCoreDataList.compactMap { convertToTrackerRecord(from: $0) }
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
+        let trackerRecordObjects = try context.fetch(fetchRequest)
+        return trackerRecordObjects.compactMap { convertToTrackerRecord(from: $0) }
     }
-    
-    func addTrackerRecord(_ trackerRecord: TrackerRecord) throws {
-        let trackerRecordCoreData = TrackerRecordCoreData(context: context)
-        trackerRecordCoreData.id = trackerRecord.id
-        trackerRecordCoreData.date = trackerRecord.date
+
+    func addTrackerRecord(_ record: TrackerRecord) throws {
+        guard let entityDescription = NSEntityDescription.entity(forEntityName: entityName, in: context) else {
+            throw NSError(domain: "TrackerRecordStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "Не удалось найти описание сущности"])
+        }
+            
+        let trackerRecordObject = NSManagedObject(entity: entityDescription, insertInto: context)
+        configure(trackerRecordObject, with: record)
+        
         try saveContext()
     }
 
-    // MARK: - Conversion Methods
-    func convertToTrackerRecord(from coreDataRecord: TrackerRecordCoreData) -> TrackerRecord? {
-        guard let id = coreDataRecord.id, let date = coreDataRecord.date else { return nil }
-        return TrackerRecord(id: id, date: date)
-    }
-    
-    // MARK: - Core Data Save
-    func saveContext() throws {
+    // MARK: - Private Methods
+    private func saveContext() throws {
         if context.hasChanges {
             try context.save()
         }
     }
+
+    private func convertToTrackerRecord(from recordObject: NSManagedObject) -> TrackerRecord? {
+        guard let id = recordObject.value(forKey: "id") as? UUID,
+              let date = recordObject.value(forKey: "date") as? Date else {
+                return nil
+        }
+        return TrackerRecord(id: id, date: date)
+    }
+       
+    private func configure(_ recordObject: NSManagedObject, with trackerRecord: TrackerRecord) {
+        recordObject.setValue(trackerRecord.id, forKey: "id")
+        recordObject.setValue(trackerRecord.date, forKey: "date")
+    }
 }
+
+
