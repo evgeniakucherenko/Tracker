@@ -8,15 +8,10 @@
 import Foundation
 import UIKit
 
-// MARK: - ScheduleViewControllerDelegate
-protocol ScheduleViewControllerDelegate: AnyObject {
-    func didSelect(days: Set<Weekday>)
-}
-
-class ScheduleViewController: UIViewController {
+final class ScheduleViewController: UIViewController {
     
     // MARK: - Properties
-    weak var delegate: ScheduleViewControllerDelegate?
+    weak var scheduleDelegate: ScheduleViewControllerDelegate?
     private var selectedDays: Set<Weekday> = []
     
     //MARK: - UI Elements
@@ -84,12 +79,12 @@ class ScheduleViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func doneButtonTapped() {
-        delegate?.didSelect(days: selectedDays)
+        scheduleDelegate?.didSelect(days: selectedDays)
         dismiss(animated: true, completion: nil)
     }
 }
 
-// MARK: - UITableViewDataSource
+// MARK: - UITableViewDataSource & UITableViewDelegate
 extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -117,7 +112,6 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         
         return cell
     }
-    
-    // MARK: - UITableViewDelegate
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { return 75 }
 }

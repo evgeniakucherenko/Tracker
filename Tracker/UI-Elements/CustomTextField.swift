@@ -43,5 +43,6 @@ class CustomTextField: UITextField {
         
         self.textColor = .blackYP
         self.font = UIFont.systemFont(ofSize: 16)
+        self.clearButtonMode = .whileEditing 
     }
 }

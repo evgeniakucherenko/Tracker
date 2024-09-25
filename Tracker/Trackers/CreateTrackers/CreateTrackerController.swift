@@ -10,9 +10,19 @@ import UIKit
 
 final class CreateTrackerController: UIViewController {
     
-    weak var trackersViewControllerDelegate: (CreateHabitsControllerDelegate & IrregularEventControllerDelegate)?
+    weak var delegate: CreateTrackerControllerDelegate?
+    private var categoryStore: TrackerCategoryStoreProtocol
+
+    init(categoryStore: TrackerCategoryStoreProtocol) {
+        self.categoryStore = categoryStore
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -41,11 +51,11 @@ final class CreateTrackerController: UIViewController {
     }
     
     private func setupViews() {
-        [habitButton,irregularEventButton].forEach {
+        [habitButton, irregularEventButton].forEach {
             view.addSubview($0)
         }
     }
-    
+ 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
             habitButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 395),
@@ -55,7 +65,7 @@ final class CreateTrackerController: UIViewController {
             habitButton.heightAnchor.constraint(equalToConstant: 60),
             
             irregularEventButton.topAnchor.constraint(equalTo: habitButton.bottomAnchor, constant: 16),
-            irregularEventButton.centerXAnchor.constraint(equalTo:  view.centerXAnchor),
+            irregularEventButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             irregularEventButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             irregularEventButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             irregularEventButton.heightAnchor.constraint(equalToConstant: 60)
@@ -64,32 +74,34 @@ final class CreateTrackerController: UIViewController {
     
     // MARK: - Actions
     @objc private func habitButtonTapped() {
-        let сreateHabitsController = CreateHabitsController()
-        сreateHabitsController.delegate = self
-        let navController = UINavigationController(rootViewController: сreateHabitsController)
+        let createHabitsController = CreateHabitsController(categoryStore: categoryStore)
+        createHabitsController.createHabitsDelegate = self
+        let navController = UINavigationController(rootViewController: createHabitsController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
     }
-    
+
     @objc private func irregularEventButtonTapped() {
-        let irregularEventController = IrregularEventController()
-        irregularEventController.delegate = self 
+        let irregularEventController = IrregularEventController(categoryStore: categoryStore)
+        irregularEventController.irregularEventDelegate = self
         let navController = UINavigationController(rootViewController: irregularEventController)
-        navController.modalPresentationStyle = .formSheet
+        navController.modalPresentationStyle = .pageSheet
         present(navController, animated: true, completion: nil)
     }
 }
 
-// MARK: - CreateHabitsControllerDelegate & IrregularEventControllerDelegate
 extension CreateTrackerController: CreateHabitsControllerDelegate & IrregularEventControllerDelegate {
     
     func didCreateTracker(_ tracker: Tracker, inCategory category: String) {
-        trackersViewControllerDelegate?.didCreateTracker(tracker, inCategory: category)
+        delegate?.didCreateTracker(tracker, inCategory: category)
         dismiss(animated: true, completion: nil)
     }
 
     func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) {
-        trackersViewControllerDelegate?.didCreateIrregularEvent(tracker, inCategory: category)
+        delegate?.didCreateIrregularEvent(tracker, inCategory: category)
         dismiss(animated: true, completion: nil)
     }
 }
+
+
+

@@ -11,15 +11,25 @@ import UIKit
 final class CategoryViewController: UIViewController {
     
     // MARK: - Properties
-    weak var delegate: CategoryViewControllerDelegate?
-    private var selectedCategory: String?
+    weak var delegate: CategorySelectionDelegate?
+    private var selectedCategory: TrackerCategory?
+    private var categoryStore: TrackerCategoryStoreProtocol
     
-    private var categories: [String] = [] {
+    private var categories: [TrackerCategory] = [] {
         didSet {
             tableView.isHidden = categories.isEmpty
             placeholderImage.isHidden = !categories.isEmpty
             labelImage.isHidden = !categories.isEmpty
         }
+    }
+    
+    init(categoryStore: TrackerCategoryStoreProtocol) {
+        self.categoryStore = categoryStore
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     //MARK: - UI Elements
@@ -48,7 +58,6 @@ final class CategoryViewController: UIViewController {
         let tableView = UITableView()
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "categoryCell")
         tableView.isHidden = true
         return tableView
     }()
@@ -61,6 +70,12 @@ final class CategoryViewController: UIViewController {
         setupNavBar()
         setupViews()
         setupConstraints()
+        
+        categoryStore.subscribeToChanges { [weak self] in
+            self?.loadCategories()
+            self?.tableView.reloadData()
+        }
+        
         loadCategories()
     }
     
@@ -101,22 +116,57 @@ final class CategoryViewController: UIViewController {
     // MARK: - Actions
     @objc private func addCategoryButtonTapped() {
         let createCategoryViewController = CreateCategoryViewController()
-        createCategoryViewController.delegate = self
+        createCategoryViewController.delegate = self 
         let navController = UINavigationController(rootViewController: createCategoryViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
     }
     
-    // MARK: - Private Methods (User Defaults)
-    private func saveCategories() {
-        UserDefaults.standard.set(categories, forKey: "savedCategories")
-    }
-    
+    // MARK: - Category Operations
     private func loadCategories() {
-        if let savedCategories = UserDefaults.standard.array(forKey: "savedCategories") as? [String] {
-            categories = savedCategories
+        do {
+            self.categories = try categoryStore.fetchAllCategories()
+        } catch {
+            print("Ошибка при загрузке категорий: \(error)")
         }
     }
+
+    private func deleteCategory(_ category: TrackerCategory, at indexPath: IndexPath) {
+           do {
+               try categoryStore.deleteCategory(category)
+               self.tableView.reloadData()
+           } catch {
+               print("Ошибка при удалении категории: \(error)")
+           }
+       }
+    
+    private func showEditCategoryScreen(for category: TrackerCategory) {
+        let editCategoryVC = CreateCategoryViewController() // Здесь будет контроллер для редактирования 
+        editCategoryVC.delegate = self
+        let navController = UINavigationController(rootViewController: editCategoryVC)
+        present(navController, animated: true, completion: nil)
+    }
+    
+    private func confirmDeleteCategory(_ category: TrackerCategory, at indexPath: IndexPath) {
+            let alert = UIAlertController(title: nil, message: "Эта категория точно не нужна?", preferredStyle: .actionSheet)
+            
+            let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+                self.deleteCategory(category, at: indexPath)
+            }
+            
+            let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
+            
+            alert.addAction(deleteAction)
+            alert.addAction(cancelAction)
+            
+            if let popoverController = alert.popoverPresentationController {
+                popoverController.sourceView = self.view
+                popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.maxY, width: 0, height: 0)
+                popoverController.permittedArrowDirections = []
+            }
+
+            present(alert, animated: true, completion: nil)
+        }
 }
 
 // MARK: - UITableViewDataSource
@@ -136,7 +186,7 @@ extension CategoryViewController: UITableViewDataSource {
         }
         
         let category = categories[indexPath.row]
-        let isSelected = category == selectedCategory
+        let isSelected = category.title == selectedCategory?.title
         let isFirst = indexPath.row == 0
         let isLast = indexPath.row == categories.count - 1
         
@@ -148,27 +198,47 @@ extension CategoryViewController: UITableViewDataSource {
 }
 
 extension CategoryViewController: UITableViewDelegate {
-    // MARK: - UITableViewDelegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedCategory = categories[indexPath.row]
         tableView.reloadData()
             
-        delegate?.didCreateCategory(selectedCategory ?? "")
+        delegate?.didSelectCategory(selectedCategory?.title ?? "")
             
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { 
             self.dismiss(animated: true, completion: nil)
         }
     }
+    
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+               
+                let category = categories[indexPath.row]
+               
+                let config = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+                   
+                   let editAction = UIAction(title: "Редактировать") { _ in
+                       self.showEditCategoryScreen(for: category)
+                   }
+                   
+                   let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
+                       self.confirmDeleteCategory(category, at: indexPath)
+                   }
+                   
+                   return UIMenu(title: "", children: [editAction, deleteAction])
+               }
+            
+               return config
+           }
 }
 
-extension CategoryViewController: CategoryViewControllerDelegate {
-    // MARK: - CategoryViewControllerDelegate
-    func didCreateCategory(_ category: String) {
-        categories.append(category)
-        saveCategories()
-        tableView.reloadData()
+extension CategoryViewController: CategoryCreationDelegate {
+    
+    func didCreateCategory(_ categoryName: String) {
+        do {
+            let newCategory = TrackerCategory(title: categoryName, trackers: [])
+            try categoryStore.addCategory(newCategory)
+        } catch {
+            print("Ошибка при сохранении категории: \(error)")
+        }
     }
 }
-
-
 
