@@ -11,23 +11,11 @@ import CoreData
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow?
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions:
+                      [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+         return true
+     }
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
-        window = UIWindow(frame: UIScreen.main.bounds)
-        
-        let launchViewController = LaunchViewController()
-        window?.rootViewController = launchViewController
-        window?.makeKeyAndVisible()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let tabBarController = TabBarController()
-            self.window?.rootViewController = tabBarController
-            self.window?.makeKeyAndVisible()
-        }
-        return true
-    }
     
     lazy var persistentContainer:  NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Tracker")

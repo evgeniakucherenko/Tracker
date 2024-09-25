@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6217DE052CA31F770018A16F /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6217DE042CA31F770018A16F /* OnboardingViewController.swift */; };
+		6217DE072CA32DAE0018A16F /* OnboardingPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6217DE062CA32DAE0018A16F /* OnboardingPageViewController.swift */; };
 		621FDADF2C7B520D003804AE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDADE2C7B520D003804AE /* AppDelegate.swift */; };
 		621FDAE12C7B520D003804AE /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDAE02C7B520D003804AE /* SceneDelegate.swift */; };
 		621FDAE32C7B520D003804AE /* TrackersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621FDAE22C7B520D003804AE /* TrackersViewController.swift */; };
@@ -62,6 +64,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6217DE042CA31F770018A16F /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
+		6217DE062CA32DAE0018A16F /* OnboardingPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPageViewController.swift; sourceTree = "<group>"; };
 		621FDADB2C7B520D003804AE /* Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		621FDADE2C7B520D003804AE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		621FDAE02C7B520D003804AE /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -237,6 +241,8 @@
 			isa = PBXGroup;
 			children = (
 				621FDB142C7DB6F6003804AE /* LaunchViewController.swift */,
+				6217DE042CA31F770018A16F /* OnboardingViewController.swift */,
+				6217DE062CA32DAE0018A16F /* OnboardingPageViewController.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -432,6 +438,7 @@
 				621FDB2F2C81E89D003804AE /* CategoryViewController.swift in Sources */,
 				621FDB422C88EFA4003804AE /* CreateIrregularEventController.swift in Sources */,
 				621FDB1B2C80BB68003804AE /* TrackerCategory.swift in Sources */,
+				6217DE072CA32DAE0018A16F /* OnboardingPageViewController.swift in Sources */,
 				621FDB222C80CA3D003804AE /* СustomButton.swift in Sources */,
 				621FDB4C2C906039003804AE /* Tracker.xcdatamodeld in Sources */,
 				621FDB0F2C7C9C99003804AE /* TabBarController.swift in Sources */,
@@ -449,6 +456,7 @@
 				621FDB2D2C81D5EA003804AE /* CustomSelectionButton.swift in Sources */,
 				621FDB362C821D4A003804AE /* ScheduleCell.swift in Sources */,
 				621FDB502C90724D003804AE /* UIColor.swift in Sources */,
+				6217DE052CA31F770018A16F /* OnboardingViewController.swift in Sources */,
 				621FDAE12C7B520D003804AE /* SceneDelegate.swift in Sources */,
 				621FDB182C80BB4B003804AE /* Tracker.swift in Sources */,
 				621FDB4E2C906E5D003804AE /* TrackerStore.swift in Sources */,
