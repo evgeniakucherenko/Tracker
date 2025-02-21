@@ -98,14 +98,17 @@ final class OnboardingViewController: UIViewController,
     }
     
     private func setupPages() {
+        let onboardingFirstTitle = NSLocalizedString("onboardingFirstTitle", comment: "")
+        let onboardingSecondTitle = NSLocalizedString("onboardingSecondTitle", comment: "")
+        
         let page1 = OnboardingPageViewController(
             imageName: "onboardingBlue",
-            text: "Отслеживайте только то, что хотите"
+            text: onboardingFirstTitle
         )
         
         let page2 = OnboardingPageViewController(
             imageName: "onboardingRed",
-            text: "Даже если это не литры воды и йога"
+            text: onboardingSecondTitle
         )
         
         pages = [page1, page2]

@@ -1,16 +1,6 @@
-//
-//  TitlePopup .swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 29.08.2024.
-//
-
-import Foundation
 import UIKit
 
 class TitlePopup: UIView {
-    
-    // MARK: - Properties
     private let label: UILabel
     
     // MARK: - Initializers
@@ -19,6 +9,7 @@ class TitlePopup: UIView {
         super.init(frame: .zero)
         configureTitle(title: title)
         setupNavBar(with: navigationItem)
+        updateTheme()
     }
     
     required init?(coder: NSCoder) {
@@ -28,7 +19,6 @@ class TitlePopup: UIView {
     // MARK: - Configuration
     private func configureTitle(title: String) {
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .black
         label.text = title
         label.translatesAutoresizingMaskIntoConstraints = false
         
@@ -43,5 +33,18 @@ class TitlePopup: UIView {
     // MARK: - Setup Methods
     private func setupNavBar(with navigationItem: UINavigationItem) {
         navigationItem.titleView = self
+    }
+    
+    // MARK: - Theme Updates
+    @objc private func updateTheme() {
+        label.textColor = UIColor(named: "textColor")
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+            
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+                updateTheme()
+        }
     }
 }

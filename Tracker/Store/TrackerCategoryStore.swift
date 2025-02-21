@@ -1,16 +1,7 @@
-//
-//  TrackerCategoryStore.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 10.09.2024.
-//
-
 import UIKit
 import CoreData
 
-final class TrackerCategoryStore: NSObject, 
-                                  NSFetchedResultsControllerDelegate,
-                                  TrackerCategoryStoreProtocol  {
+final class TrackerCategoryStore: CoreDataStore,TrackerCategoryStoreProtocol {
 
     // MARK: - Properties
     private let context: NSManagedObjectContext
@@ -37,41 +28,78 @@ final class TrackerCategoryStore: NSObject,
         let categories = try fetchAllCategories()
         return categories.first { $0.title == title }
     }
-    
+
     func addCategory(_ category: TrackerCategory) throws {
         if let existingCategory = try fetchCategory(byTitle: category.title) {
-
             let updatedTrackers = existingCategory.trackers + category.trackers
             let updatedCategory = TrackerCategory(title: existingCategory.title, trackers: updatedTrackers)
-            
             try updateCategory(updatedCategory)
         } else {
             try addCategoryToCoreData(category)
         }
-        
         try saveContext()
         notifyChanges()
     }
-
+    
     func deleteCategory(_ category: TrackerCategory) throws {
         guard let categoryObject = try fetchCategoryEntity(byTitle: category.title) else { return }
         context.delete(categoryObject)
         try saveContext()
         notifyChanges()
     }
-
+    
     func updateCategory(_ category: TrackerCategory) throws {
         guard let categoryObject = try fetchCategoryEntity(byTitle: category.title) else {
-            try addCategoryToCoreData(category)
-            notifyChanges()
-            return
+            throw NSError(domain: "TrackerCategoryStore", code: 404, userInfo: [NSLocalizedDescriptionKey: "Категория не найдена"])
         }
-        
         configure(categoryObject, with: category)
         try saveContext()
         notifyChanges()
     }
-
+    
+    func updateCategory(from oldCategory: TrackerCategory, to newCategoryTitle: String, tracker: Tracker?) throws {
+        // 1. Найти старую категорию в Core Data
+        guard let oldCategoryObject = try fetchCategoryEntity(byTitle: oldCategory.title) else {
+            throw NSError(domain: "TrackerCategoryStore", code: 404, userInfo: [NSLocalizedDescriptionKey: "Старая категория не найдена"])
+        }
+        
+        // 2. Удалить трекер из старой категории, если он указан
+        if let tracker = tracker {
+            let trackersSet = oldCategoryObject.mutableSetValue(forKey: "trackers")
+            if let existingTracker = trackersSet.first(where: {
+                ($0 as? NSManagedObject)?.value(forKey: "id") as? UUID == tracker.id
+            }) {
+                trackersSet.remove(existingTracker)
+            }
+        }
+        
+        // 3. Найти или создать новую категорию
+        if let newCategoryObject = try fetchCategoryEntity(byTitle: newCategoryTitle) {
+            // Добавить трекер в существующую категорию
+            if let tracker = tracker {
+                let trackersSet = newCategoryObject.mutableSetValue(forKey: "trackers")
+                trackersSet.add(createTrackerObject(from: tracker))
+            }
+        } else {
+            // Создать новую категорию, если она не существует
+            let newCategory = TrackerCategory(title: newCategoryTitle, trackers: tracker != nil ? [tracker!] : [])
+            try addCategoryToCoreData(newCategory)
+        }
+        
+        try saveContext()
+        notifyChanges()
+    }
+    
+    func renameCategory(from oldCategory: TrackerCategory, to newCategoryTitle: String) throws {
+            guard let categoryObject = try fetchCategoryEntity(byTitle: oldCategory.title) else {
+                throw NSError(domain: "TrackerCategoryStore", code: 404, userInfo: [NSLocalizedDescriptionKey: "Категория не найдена"])
+            }
+            
+            categoryObject.setValue(newCategoryTitle, forKey: "title")
+            try saveContext()
+            notifyChanges()
+        }
+    
     // MARK: - Private Methods
     private func setupFetchedResultsController() {
         let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
@@ -92,25 +120,23 @@ final class TrackerCategoryStore: NSObject,
             print("Ошибка выполнения запроса: \(error)")
         }
     }
-    
+
     private func addCategoryToCoreData(_ category: TrackerCategory) throws {
         guard let entityDescription = NSEntityDescription.entity(forEntityName: entityName, in: context) else {
             throw NSError(domain: "TrackerCategoryStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "Не удалось найти описание сущности"])
         }
         let categoryObject = NSManagedObject(entity: entityDescription, insertInto: context)
         configure(categoryObject, with: category)
-
         try saveContext()
     }
-    
+
     private func configure(_ categoryObject: NSManagedObject, with category: TrackerCategory) {
         categoryObject.setValue(category.title, forKey: "title")
 
         let trackersSet = categoryObject.mutableSetValue(forKey: "trackers")
         trackersSet.removeAllObjects()
         for tracker in category.trackers {
-            let trackerObject = createTrackerObject(from: tracker)
-            trackersSet.add(trackerObject)
+            trackersSet.add(createTrackerObject(from: tracker))
         }
     }
 
@@ -160,8 +186,7 @@ final class TrackerCategoryStore: NSObject,
         }
 
         let schedule = (try? JSONDecoder().decode(Set<Weekday>.self, from: scheduleData)) ?? []
-
-        return Tracker(id: id, name: name, color: color, emoji: emoji, schedule: schedule)
+        return Tracker(id: id, name: name, color: color, emoji: emoji, schedule: schedule, isPinned: false)
     }
 
     private func fetchCategoryEntity(byTitle title: String) throws -> NSManagedObject? {
@@ -173,27 +198,7 @@ final class TrackerCategoryStore: NSObject,
 
     private func saveContext() throws {
         if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                context.rollback()
-                throw error
-            }
+            try context.save()
         }
     }
-
-    private func notifyChanges() {
-        onChangeCallback?()
-    }
-
-    func subscribeToChanges(_ onChange: @escaping () -> Void) {
-        onChangeCallback = onChange
-    }
-
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        notifyChanges()
-    }
 }
-
-
-

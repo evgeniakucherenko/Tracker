@@ -1,10 +1,3 @@
-//
-//  Tracker.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 29.08.2024.
-//
-
 import UIKit
 
 struct Tracker {
@@ -13,6 +6,7 @@ struct Tracker {
     let color: UIColor
     let emoji: String
     let schedule: Set<Weekday>
+    var isPinned: Bool
 }
 
 enum Weekday: String, CaseIterable, Codable {

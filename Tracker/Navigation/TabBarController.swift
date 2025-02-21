@@ -1,10 +1,3 @@
-//
-//  TabBarController.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 26.08.2024.
-//
-
 import Foundation
 import UIKit
 
@@ -14,7 +7,7 @@ final class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .white
+        view.backgroundColor = .background
         tabBar.isTranslucent = false
         
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
@@ -28,14 +21,30 @@ final class TabBarController: UITabBarController {
         let categoryStore = TrackerCategoryStore(context: context)
 
         let trackerViewController = TrackersViewController(trackerStore: trackerStore, categoryStore: categoryStore)
-        let statisticsViewController = StatViewController()
+        let trackerNavigationController = UINavigationController(rootViewController: trackerViewController)
         
-        let navigationController = UINavigationController(rootViewController: trackerViewController)
+        let statisticsViewController = StatViewController(
+            trackerStore: trackerStore,
+            trackerRecordStore: trackerRecordStore
+        )
+        let statisticsNavigationController = UINavigationController(rootViewController: statisticsViewController)
+        
+        let nameTabBarTrackers = NSLocalizedString("trackers", comment: "")
+        let nameTabBarStatistics = NSLocalizedString("statistics", comment: "")
+        
+        trackerViewController.tabBarItem = UITabBarItem(
+            title: nameTabBarTrackers,
+            image: UIImage(named: "trackers_icon"),
+            tag: 0
+        )
+        
+        statisticsViewController.tabBarItem = UITabBarItem(
+            title: nameTabBarStatistics,
+            image: UIImage(named: "stats_icon"),
+            tag: 1
+        )
 
-        trackerViewController.tabBarItem = UITabBarItem(title: "Трекеры", image: UIImage(named: "trackers_icon"), tag: 0)
-        statisticsViewController.tabBarItem = UITabBarItem(title: "Статистика", image: UIImage(named: "stats_icon"), tag: 1)
-
-        self.viewControllers = [navigationController, statisticsViewController]
+        self.viewControllers = [trackerNavigationController, statisticsNavigationController]
         self.addTopBorder(color: UIColor.gray, thickness: 0.5)
     }
 }

@@ -1,9 +1,3 @@
-//
-//  OnboardingPageViewController.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 24.09.2024.
-//
 
 import UIKit
 
@@ -14,7 +8,8 @@ final class OnboardingPageViewController: UIViewController {
     private let textLabel = UILabel()
     
     private lazy var finishButton: CustomButton = {
-        let button = CustomButton(title: "Вот это технологии!")
+        let onboardingButton = NSLocalizedString("onboardingButton", comment: "")
+        let button = CustomButton(title: onboardingButton)
         button.addTarget(self, action: #selector(finishButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -63,7 +58,7 @@ final class OnboardingPageViewController: UIViewController {
         ])
         
         textLabel.text = text
-        textLabel.textColor = .blackYP
+        textLabel.textColor = .black
         textLabel.font = .boldSystemFont(ofSize: 32)
         textLabel.numberOfLines = 2
         textLabel.textAlignment = .center

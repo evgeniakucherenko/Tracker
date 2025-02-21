@@ -1,10 +1,3 @@
-//
-//  CustomTextField.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 29.08.2024.
-//
-
 import Foundation
 import UIKit
 
@@ -14,6 +7,7 @@ class CustomTextField: UITextField {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupTextField()
+        updateTheme()
     }
     
     required init?(coder: NSCoder) {
@@ -41,8 +35,21 @@ class CustomTextField: UITextField {
             ]
         )
         
-        self.textColor = .blackYP
+        self.textColor = .text
         self.font = UIFont.systemFont(ofSize: 16)
         self.clearButtonMode = .whileEditing 
+    }
+    
+    // MARK: - Theme Updates
+    @objc private func updateTheme() {
+        self.backgroundColor = UIColor(named: "customSelectionButtonColor")
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+            
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+                updateTheme()
+        }
     }
 }

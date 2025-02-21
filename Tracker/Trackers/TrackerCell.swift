@@ -1,14 +1,7 @@
-//
-//  TrackerCell.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 01.09.2024.
-//
 
-import Foundation
 import UIKit
 
-final class TrackerCell: UICollectionViewCell, UIContextMenuInteractionDelegate {
+final class TrackerCell: UICollectionViewCell {
     
     // MARK: - Public Properties
     static let reuseIdentifier = "TrackerCell"
@@ -17,11 +10,13 @@ final class TrackerCell: UICollectionViewCell, UIContextMenuInteractionDelegate 
     var onPin: (() -> Void)?
     var onEdit: (() -> Void)?
     
+    var onPinToggle: (() -> Void)?
+    
     // MARK: - UI-elements
     let categoryLabel: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 19)
-        label.textColor = .blackYP
+        label.textColor = .text
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -39,10 +34,6 @@ final class TrackerCell: UICollectionViewCell, UIContextMenuInteractionDelegate 
         let view = UIView()
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
-
-        let interaction = UIContextMenuInteraction(delegate: self)
-        view.addInteraction(interaction)
-        
         return view
     }()
     
@@ -62,8 +53,15 @@ final class TrackerCell: UICollectionViewCell, UIContextMenuInteractionDelegate 
     private let daysLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .blackYP
+        label.textColor = .text
         return label
+    }()
+    
+    private let pinIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named:"pin_icon")
+        //imageView.isHidden = false
+        return imageView
     }()
     
     private lazy var plusButton: UIButton = {
@@ -98,54 +96,34 @@ final class TrackerCell: UICollectionViewCell, UIContextMenuInteractionDelegate 
         setupViews()
         setupConstraints()
     }
-
-    // MARK: - Context Menu Interaction Delegate
-    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-
-            let pinAction = UIAction(title: "Закрепить") { _ in
-                self.onPin?()
-            }
-            
-            let editAction = UIAction(title: "Редактировать") { _ in
-                self.onEdit?()
-            }
-            
-            let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
-                self.onDelete?()
-            }
-            
-            return UIMenu(title: "", children: [pinAction, editAction, deleteAction])
-        }
-    }
-
+    
     // MARK: - Configure Cell
-    func configure(with title: String, days: Int, category: String, emoji: String, color: UIColor, isRepeatedCategory: Bool, isCompleted: Bool) {
+    func configure(with title: String, days: Int, category: String, emoji: String, color: UIColor, isRepeatedCategory: Bool, isCompleted: Bool, isPinned: Bool) {
         titleLabel.text = title
         daysLabel.text = "\(days) \(pluralizeDay(days))"
         emojiLabel.text = emoji
         cardImageView.backgroundColor = color
         plusButton.backgroundColor = color
-        categoryLabel.text = category
-        categoryLabel.isHidden = false
-        categoryLabel.textColor = isRepeatedCategory ? .white : .black
-        
+        pinIcon.isHidden = !isPinned
+
+        if isRepeatedCategory {
+            categoryLabel.text = category // Сохраняем текст для отступов
+            categoryLabel.textColor = .clear // Делаем текст полностью прозрачным
+        } else {
+            categoryLabel.text = category
+            categoryLabel.textColor = .text // Или любой цвет, используемый по умолчанию
+        }
+
         let borderColor = UIColor(named: "gray_color_YP")?.withAlphaComponent(0.3)
         cardImageView.layer.borderColor = borderColor?.cgColor
         cardImageView.layer.borderWidth = 1.0
         
         updateButtonAppearance(isCompleted: isCompleted)
     }
-
+  
     private func pluralizeDay(_ count: Int) -> String {
-        switch count % 10 {
-        case 1 where count % 100 != 11:
-            return "день"
-        case 2, 3, 4 where (count % 100 < 10 || count % 100 >= 20):
-            return "дня"
-        default:
-            return "дней"
-        }
+        let format = NSLocalizedString("days", comment: "Количество дней")
+        return String.localizedStringWithFormat(format, count)
     }
     
     private func updateButtonAppearance(isCompleted: Bool) {
@@ -172,7 +150,7 @@ extension TrackerCell {
     private func setupViews() {
         self.addSubview(categoryLabel)
         
-        [titleLabel,emojiBackgroundView, emojiLabel].forEach {
+        [titleLabel,emojiBackgroundView, emojiLabel, pinIcon].forEach {
             cardImageView.addSubview($0)
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
@@ -216,7 +194,10 @@ extension TrackerCell {
             
             daysLabel.centerYAnchor.constraint(equalTo: plusButton.centerYAnchor),
             daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
-            daysLabel.trailingAnchor.constraint(equalTo: plusButton.leadingAnchor, constant: -10)
+            daysLabel.trailingAnchor.constraint(equalTo: plusButton.leadingAnchor, constant: -10),
+            
+            pinIcon.trailingAnchor.constraint(equalTo: cardImageView.trailingAnchor, constant: -4),
+            pinIcon.topAnchor.constraint(equalTo: cardImageView.topAnchor, constant: 12)
         ])
     }
 }

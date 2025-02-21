@@ -24,6 +24,8 @@ final class LaunchViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.showNextScreen()
         }
+        
+        UserDefaults.standard.set(false, forKey: "onboardingCompleted")
     }
     
     //MARK: - UI Elements
@@ -48,6 +50,7 @@ final class LaunchViewController: UIViewController {
     private func showNextScreen() {
 
         let onboardingCompleted = UserDefaults.standard.bool(forKey: "onboardingCompleted")
+        print("onboardingCompleted: \(onboardingCompleted)")
             
         if onboardingCompleted {
             let mainViewController = TabBarController()

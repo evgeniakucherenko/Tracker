@@ -1,20 +1,13 @@
-//
-//  TrackerStore.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 10.09.2024.
-//
 
 import UIKit
 import CoreData
 
-final class TrackerStore: NSObject, 
-                          TrackerStoreProtocol,
-                          NSFetchedResultsControllerDelegate {
+final class TrackerStore: CoreDataStore, TrackerStoreProtocol {
 
     // MARK: - Properties
     private let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<NSManagedObject>
+    
     private var onChangeCallback: (() -> Void)?
     private let entityName = "TrackerCoreData"
     let trackerRecordStore: TrackerRecordStoreProtocol
@@ -126,30 +119,62 @@ final class TrackerStore: NSObject,
     }
     
     private func convertToTracker(from trackerObject: NSManagedObject) -> Tracker? {
-        guard let id = trackerObject.value(forKey: "id") as? UUID,
-              let name = trackerObject.value(forKey: "name") as? String,
-              let emoji = trackerObject.value(forKey: "emoji") as? String,
-              let colorHex = trackerObject.value(forKey: "color") as? String,
-              let color = UIColor(hexString: colorHex),
-              let scheduleData = trackerObject.value(forKey: "schedule") as? Data else {
+        guard
+            let id = trackerObject.value(forKey: "id") as? UUID,
+            let name = trackerObject.value(forKey: "name") as? String,
+            let emoji = trackerObject.value(forKey: "emoji") as? String,
+            let colorHex = trackerObject.value(forKey: "color") as? String,
+            let color = UIColor(hexString: colorHex),
+            let scheduleData = trackerObject.value(forKey: "schedule") as? Data
+        else {
             return nil
         }
 
+        // Декодируем расписание
         let schedule = (try? JSONDecoder().decode(Set<Weekday>.self, from: scheduleData)) ?? []
-        return Tracker(id: id, name: name, color: color, emoji: emoji, schedule: schedule)
+
+        // Устанавливаем значение isPinned по умолчанию
+        let isPinned = false
+
+        return Tracker(id: id, name: name, color: color, emoji: emoji, schedule: schedule, isPinned: isPinned)
     }
 
-    // MARK: - Change Handling
-    func subscribeToChanges(_ onChange: @escaping () -> Void) {
-        self.onChangeCallback = onChange
+   // MARK: - Change Handling
+    func deleteTracker(_ tracker: Tracker) throws {
+        let fetchRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "TrackerCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            for object in results {
+                context.delete(object)
+            }
+            if context.hasChanges {
+                try context.save()
+            }
+        } catch {
+            throw error
+        }
     }
     
-    private func notifyChanges() {
-        onChangeCallback?()
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        notifyChanges()
+    func updateTracker(_ tracker: Tracker) throws {
+       
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName)
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            guard let trackerObject = results.first else {
+                throw NSError(domain: "TrackerStore", code: 404, userInfo: [NSLocalizedDescriptionKey: "Tracker not found"])
+            }
+
+            configure(trackerObject, with: tracker)
+            try saveContext()
+            notifyChanges()
+        } catch {
+            print("Error updating tracker: \(error)")
+            throw error
+        }
     }
 }
 

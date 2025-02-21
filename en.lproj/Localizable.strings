@@ -1,0 +1,55 @@
+
+// TabBar
+"trackers" = "Trackers";
+"statistics" = "Statistics";
+
+// Buttons
+"done" = "Done";
+"cancel" = "Cancel";
+"delete" = "Delete";
+"edit" = "Edit";
+"pin" = "Pin";
+"unpin" = "Unpin";
+"create" = "Create";
+"habitButton" = "Habit";
+"irregularEventButton" = "Irregular event";
+"addCategory" = "Add category";
+"onboardingButton" = "This is technology!";
+
+// Weekdays
+"monday" = "Monday";
+"tuesday" = "Tuesday";
+"wednesday" = "Wednesday";
+"thursday" = "Thursday";
+"friday" = "Friday";
+"saturday" = "Saturday";
+"sunday" = "Sunday";
+
+// Titles
+"emptyTrackers" = "What will we track?";
+"titlePopupCreateTracker" = "Creating a tracker";
+"newHabit" = "New habit";
+"newirregularEventButton" = "New irregular event";
+"categoryTitleAdditional" = "Habits and events can\n be combined by meaning";
+"onboardingFirstTitle" = "Track only what you want";
+"onboardingSecondTitle" = "Even if it's not liters of water and yoga";
+"newCategory" = "Category";
+"editHabit" = "Editing a habit";
+"pinned" = "Pinned";
+"nothingFound" = "Nothing found";
+"bestPeriod" = "Best period";
+"perfectDays" = "Perfect days";
+"completedTrackers" = "Сompleted trackers";
+"averageValue" = "Average value";
+"filters" = "Filters";
+
+// Text Fields
+"category" = "Category";
+"schedule" = "Schedule";
+"trackerNameTextField" = "Enter tracker name";
+"addCategoryName"= "Enter category name";
+
+// Additional
+"color" = "Color";
+"errorTextLabel" = "Limit 38 characters";
+"confirmDeleteTracker" = "Are you sure you want to delete the tracker?";
