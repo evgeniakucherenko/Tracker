@@ -1,10 +1,3 @@
-//
-//  UIColor.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 10.09.2024.
-//
-
 import Foundation
 import UIKit
 
@@ -73,6 +66,18 @@ extension UIColor {
         
         return red1 == red2 && green1 == green2 && blue1 == blue2 && alpha1 == alpha2
     }
+    
+    convenience init(hex: String) {
+            var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+            if hexSanitized.hasPrefix("#") { hexSanitized.remove(at: hexSanitized.startIndex) }
+            var rgbValue: UInt64 = 0
+            Scanner(string: hexSanitized).scanHexInt64(&rgbValue)
+
+            let r = CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0
+            let g = CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0
+            let b = CGFloat(rgbValue & 0x0000FF) / 255.0
+            self.init(red: r, green: g, blue: b, alpha: 1.0)
+        }
 }
 
 

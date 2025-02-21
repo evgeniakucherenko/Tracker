@@ -1,10 +1,3 @@
-//
-//  CustomSelectionButton.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 30.08.2024.
-//
-
 import Foundation
 import UIKit
 
@@ -19,6 +12,7 @@ class CustomSelectionButton: UIButton {
         super.init(frame: .zero)
         configureButton(title: title)
         setupConstraints()
+        updateTheme()
     }
     
     required init?(coder: NSCoder) {
@@ -32,7 +26,7 @@ class CustomSelectionButton: UIButton {
         self.backgroundColor = UIColor(named: "light_gray_YP")
             
         customTitleLabel.text = title
-        customTitleLabel.textColor = .blackYP
+        customTitleLabel.textColor = .text
         customTitleLabel.font = UIFont.systemFont(ofSize: 17)
         customTitleLabel.numberOfLines = 2
         customTitleLabel.textAlignment = .left
@@ -72,12 +66,25 @@ class CustomSelectionButton: UIButton {
             
             attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 17, weight: .regular), range: titleRange)
             attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 17, weight: .regular), range: subtitleRange)
-            attributedText.addAttribute(.foregroundColor, value: UIColor.blackYP, range: titleRange)
+            attributedText.addAttribute(.foregroundColor, value: UIColor.text, range: titleRange)
             attributedText.addAttribute(.foregroundColor, value: UIColor.grayColorYP, range: subtitleRange)
             
             customTitleLabel.attributedText = attributedText
         } else {
             customTitleLabel.text = title
+        }
+    }
+    
+    // MARK: - Theme Updates
+    @objc private func updateTheme() {
+        self.backgroundColor = UIColor(named: "customSelectionButtonColor")
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+            
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+                updateTheme()
         }
     }
 }

@@ -1,9 +1,3 @@
-//
-//  TrackerRecord.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 10.09.2024.
-//
 
 import CoreData
 
