@@ -5,6 +5,7 @@ class BaseCreateTrackerController<ViewModelType: BaseCreateTrackerViewModel>: UI
     var viewModel: ViewModelType
 
     weak var categorySelectionDelegate: CategorySelectionDelegate?
+    var coordinator: TrackersCoordinator?
 
     let scrollView = UIScrollView()
     let contentView = UIView()
@@ -68,6 +69,7 @@ class BaseCreateTrackerController<ViewModelType: BaseCreateTrackerViewModel>: UI
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+
         view.backgroundColor = .white
         setupNavBar()
         setupViews()
@@ -82,7 +84,7 @@ class BaseCreateTrackerController<ViewModelType: BaseCreateTrackerViewModel>: UI
 
             emojiCollectionView.translatesAutoresizingMaskIntoConstraints = false
             colorsCollectionView.translatesAutoresizingMaskIntoConstraints = false
-            emojiCollectionViewTopConstraint = emojiCollectionView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 200)
+            emojiCollectionViewTopConstraint = emojiCollectionView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 190)
 
             NSLayoutConstraint.activate([
                 nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
@@ -210,9 +212,12 @@ class BaseCreateTrackerController<ViewModelType: BaseCreateTrackerViewModel>: UI
 
     // MARK: - Actions
     @objc func createButtonTapped() {
-        guard let (tracker, category) = viewModel.createTracker() else { return }
+        guard let (tracker, category) = viewModel.createTracker() else {
+            return
+        }
         handleCreateTracker(tracker: tracker, category: category)
     }
+    
 
     @objc func cancelButtonTapped() {
         closeModalAndSwitchToTab(index: 0)
@@ -225,7 +230,7 @@ class BaseCreateTrackerController<ViewModelType: BaseCreateTrackerViewModel>: UI
     func closeModalAndSwitchToTab(index: Int) {
         guard let window = UIApplication.shared.windows.first else { return }
 
-        if let tabBarController = window.rootViewController as? TabBarController {
+        if let tabBarController = window.rootViewController as? CustomTabBarController {
             tabBarController.selectedIndex = index
         }
 

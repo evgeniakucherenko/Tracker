@@ -17,19 +17,26 @@ final class EditTrackerViewModel {
     }
     
     var hasChanges: Bool {
-        return name != originalTracker.name ||
-               selectedColor != originalTracker.color ||
-               selectedEmoji != originalTracker.emoji ||
-               selectedSchedule != originalTracker.schedule ||
-               selectedCategory != findCategory(for: originalTracker)?.title
+        get async {
+            let categoryTitle = await findCategory(for: originalTracker)?.title ?? "Категория по умолчанию"
+            return name != originalTracker.name ||
+                selectedColor != originalTracker.color ||
+                selectedEmoji != originalTracker.emoji ||
+                selectedSchedule != originalTracker.schedule ||
+                selectedCategory != categoryTitle
+        }
     }
     
-    private func findCategory(for tracker: Tracker) -> TrackerCategory? {
-        return try? categoryStore.fetchAllCategories()
-            .first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) })
+    private func findCategory(for tracker: Tracker) async -> TrackerCategory? {
+        do {
+            let categories = try await categoryStore.fetchAllCategories()
+            return categories.first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) })
+        } catch {
+            print("Ошибка при получении категорий: \(error.localizedDescription)")
+            return nil
+        }
     }
 
-    // Свойства для редактирования
     var name: String
     var selectedCategory: String
     var selectedSchedule: Set<Weekday>
@@ -47,18 +54,24 @@ final class EditTrackerViewModel {
         self.selectedColor = tracker.color
         self.selectedEmoji = tracker.emoji
         
-        // Находим категорию, к которой принадлежит трекер
-        if let category = try? categoryStore.fetchAllCategories().first(where: {
-            $0.trackers.contains(where: { $0.id == tracker.id })
-        }) {
-            self.selectedCategory = category.title
-        } else {
-            self.selectedCategory = "Категория по умолчанию"
+        self.selectedCategory = "Категория по умолчанию"
+        
+        Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                if let category = try await categoryStore.fetchAllCategories()
+                    .first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) }) {
+                    self.selectedCategory = category.title
+                }
+            } catch {
+                print("Ошибка при загрузке категорий: \(error.localizedDescription)")
+            }
         }
     }
 
+
     // MARK: - Save Changes
-    func saveChanges() throws {
+    func saveChanges() async throws {
         let updatedTracker = Tracker(
             id: originalTracker.id,
             name: name,
@@ -68,22 +81,32 @@ final class EditTrackerViewModel {
             isPinned: originalTracker.isPinned
         )
 
-        try trackerStore.updateTracker(updatedTracker)
+        do {
+            try await trackerStore.updateTracker(updatedTracker)
 
-        guard let oldCategory = try categoryStore.fetchAllCategories()
-            .first(where: { $0.trackers.contains(where: { $0.id == originalTracker.id }) })
-        else {
-            throw NSError(domain: "EditTrackerViewModel", code: 404, userInfo: [NSLocalizedDescriptionKey: "Старая категория не найдена"])
+            guard let oldCategory = try await categoryStore.fetchAllCategories()
+                    .first(where: { $0.trackers.contains(where: { $0.id == originalTracker.id }) })
+            else {
+                throw NSError(
+                    domain: "EditTrackerViewModel",
+                    code: 404,
+                    userInfo: [NSLocalizedDescriptionKey: "Старая категория не найдена"]
+                )
+            }
+
+            try await categoryStore.updateCategory(
+                from: oldCategory,
+                to: selectedCategory,
+                tracker: updatedTracker
+            )
+
+            print("Трекер успешно обновлён и перенесён в новую категорию!")
+            NotificationCenter.default.post(name: .trackerUpdated, object: nil)
+
+        } catch {
+            print("Ошибка при сохранении изменений: \(error.localizedDescription)")
+            throw error
         }
-
-        try categoryStore.updateCategory(
-            from: oldCategory,        
-            to: selectedCategory,
-            tracker: updatedTracker
-        )
-
-        print("Трекер успешно обновлён и перенесён в новую категорию!")
-        NotificationCenter.default.post(name: .trackerUpdated, object: nil)
     }
 }
 

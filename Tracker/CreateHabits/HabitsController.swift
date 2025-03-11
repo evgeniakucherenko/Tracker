@@ -5,13 +5,14 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
                                     CategorySelectionDelegate {
 
     weak var createHabitsDelegate: CreateHabitsControllerDelegate?
-
+    
     private lazy var categoryButton: CustomSelectionButton = {
         let category = NSLocalizedString("category", comment: "")
         let button = CustomSelectionButton(title: category)
         button.layer.cornerRadius = 16
         button.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         button.addTarget(self, action: #selector(categoryButtonTapped), for: .touchUpInside)
+        print("🟢 categoryButton создан, target установлен")
         return button
     }()
 
@@ -51,7 +52,7 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
             contentView.addSubview($0)
         }
     }
-
+    
     override func setupConstraints() {
         super.setupConstraints()
 
@@ -98,18 +99,18 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
     }
 
     override func handleCreateTracker(tracker: Tracker, category: String) {
-        createHabitsDelegate?.didCreateTracker(tracker, inCategory: category)
-        closeModalAndSwitchToTab(index: 0)
+        Task {
+            await createHabitsDelegate?.didCreateTracker(tracker, inCategory: category)
+            closeModalAndSwitchToTab(index: 0)
+        }
     }
-
+     
     @objc private func categoryButtonTapped() {
-        let categoryViewModel = CategoryViewModel(categoryStore: viewModel.categoryStoreRef)
-        let categoryViewController = CategoryViewController(viewModel: categoryViewModel)
-        categoryViewController.delegate = self
-
-        let navController = UINavigationController(rootViewController: categoryViewController)
-        navController.modalPresentationStyle = .formSheet
-        present(navController, animated: true)
+        if let coordinator = coordinator {
+            coordinator.showCategoryScreen(delegate: self)
+        } else {
+            print("🔴 Координатор равен nil в categoryButtonTapped")
+        }
     }
 
     @objc private func scheduleButtonTapped() {

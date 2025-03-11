@@ -6,6 +6,7 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
 
     var viewModel: TrackersViewModel
     var alertPresenter: AlertPresenter!
+    weak var coordinator: TrackersCoordinator?
 
     // MARK: - UI Elements
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -46,18 +47,10 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
         
     return button
     }()
-    
-    @objc private func filterButtonTapped() {
-        let filtersViewController = TrackersFilteringController()
-        filtersViewController.delegate = self // Устанавливаем делегат
-        let navController = UINavigationController(rootViewController: filtersViewController)
-        navController.modalPresentationStyle = .formSheet
-        present(navController, animated: true)
-    }
 
     // MARK: - Initializer
-    init(trackerStore: TrackerStoreProtocol, categoryStore: TrackerCategoryStoreProtocol) {
-        self.viewModel = TrackersViewModel(trackerStore: trackerStore, categoryStore: categoryStore)
+    init(viewModel: TrackersViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -68,8 +61,8 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         
+        view.backgroundColor = .white
         collectionView.delegate = self
 
         setupNavBar()
@@ -77,29 +70,14 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
         setupBindings()
         updateTheme()
         
-        viewModel.loadInitialData()
+        Task {
+            await viewModel.loadInitialData()
+        }
         alertPresenter = AlertPresenter(viewController: self)
     
         datePicker.overrideUserInterfaceStyle = .light
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-        
-        setupNotifications()
-        
         }
-    
-    @objc private func reloadTrackersAfterEdit() {
-        reloadTrackers()
-    }
-    
-    @objc private func reloadTrackers() {
-        viewModel.loadInitialData() // Перезагрузка данных через ViewModel
-        collectionView.reloadData()
-    }
-    
-    private func setupNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadTrackers), name: .trackerUpdated, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadTrackersAfterEdit), name: .trackerUpdated, object: nil)
-    }
 
     // MARK: - Setup Methods
     private func setupBindings() {
@@ -141,7 +119,6 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
             filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             filterButton.heightAnchor.constraint(equalToConstant: 50),
             filterButton.widthAnchor.constraint(equalToConstant: 114),
-            filterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -130),
 
             collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -170,15 +147,16 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
     }
 
     // MARK: - Actions
+    @objc private func filterButtonTapped() {
+        coordinator?.showFilterScreen(delegate: self)
+    }
+    
+    @objc private func addButtonTapped() {
+        coordinator?.showCreateTracker(delegate: self)
+    }
+    
     @objc private func dateChanged() {
         viewModel.updateDate(datePicker.date)
-    }
-
-    @objc private func addButtonTapped() {
-        let createTrackerController = CreateTrackerController(categoryStore: viewModel.categoryStore)
-        createTrackerController.delegate = self
-        let navController = UINavigationController(rootViewController: createTrackerController)
-        present(navController, animated: true, completion: nil)
     }
 
     private func updateScrollViewState(isContentAvailable: Bool) {
@@ -188,26 +166,22 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
     }
     
     func presentEditTrackerScreen(for tracker: Tracker) {
-        let viewModel = EditTrackerViewModel(
-            tracker: tracker,
+        coordinator?.showEditTrackerScreen(
+            for: tracker,
             categoryStore: viewModel.categoryStore,
             trackerStore: viewModel.trackerStoreRef
         )
-        let editController = EditTrackerController(viewModel: viewModel)
-        let navigationController = UINavigationController(rootViewController: editController)
-        present(navigationController, animated: true, completion: nil)
     }
 }
 
-
-// MARK: - CreateTrackerControllerDelegate
+// MARK: - CreateTrackerControllerDelegate & TrackersFilteringControllerDelegate 
 extension TrackersViewController {
-    func didCreateTracker(_ tracker: Tracker, inCategory category: String) {
-        viewModel.addTracker(tracker, to: category)
+    func didCreateTracker(_ tracker: Tracker, inCategory category: String) async {
+        await viewModel.addTracker(tracker, to: category)
     }
 
-    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) {
-        viewModel.addTracker(tracker, to: category)
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) async {
+        await viewModel.addTracker(tracker, to: category)
     }
 }
 

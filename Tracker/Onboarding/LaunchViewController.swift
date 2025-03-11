@@ -1,16 +1,14 @@
-//
-//  LaunchViewController.swift
-//  Tracker
-//
-//  Created by Evgenia Kucherenko on 27.08.2024.
-//
-
 import Foundation
 import UIKit
 
+protocol LaunchViewControllerDelegate: AnyObject {
+    func didFinishLaunching()
+}
+
 final class LaunchViewController: UIViewController {
     
-    //MARK: - Lifycycle
+    weak var delegate: LaunchViewControllerDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -20,15 +18,14 @@ final class LaunchViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-            
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.showNextScreen()
+            self.delegate?.didFinishLaunching()
         }
         
         UserDefaults.standard.set(false, forKey: "onboardingCompleted")
     }
     
-    //MARK: - UI Elements
     private let logoImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = .logo
@@ -36,7 +33,6 @@ final class LaunchViewController: UIViewController {
         return imageView
     }()
     
-    // MARK: - Setup Methods
     private func setupConstraints() {
         view.addSubview(logoImage)
         
@@ -44,34 +40,5 @@ final class LaunchViewController: UIViewController {
             logoImage.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
             logoImage.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor)
         ])
-    }
-    
-    // MARK: - Navigation
-    private func showNextScreen() {
-
-        let onboardingCompleted = UserDefaults.standard.bool(forKey: "onboardingCompleted")
-        print("onboardingCompleted: \(onboardingCompleted)")
-            
-        if onboardingCompleted {
-            let mainViewController = TabBarController()
-            setRootViewController(mainViewController)
-        } else {
-            let onboardingViewController = OnboardingViewController()
-            setRootViewController(onboardingViewController)
-        }
-    }
-        
-    private func setRootViewController(_ viewController: UIViewController) {
-
-        if let window = UIApplication.shared.windows.first {
-            window.rootViewController = viewController
-            UIView.transition(with: window, 
-                              duration: 0.5,
-                              options: .transitionCrossDissolve,
-                              animations: nil,
-                              completion: nil)
-        } else {
-            print("Не удалось получить window")
-        }
     }
 }

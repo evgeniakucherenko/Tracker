@@ -17,40 +17,41 @@ final class CategoryViewModel {
         self.categoryStore = categoryStore
     }
     
-    func fetchCategories() {
+    func fetchCategories() async {
         do {
-            self.categories = try categoryStore.fetchAllCategories()
+            self.categories = try await categoryStore.fetchAllCategories()
         } catch {
             onError?("Ошибка при получении категорий: \(error.localizedDescription)")
         }
     }
 
-    func addCategory(_ categoryName: String) {
+    func addCategory(_ categoryName: String) async {
         do {
             let newCategory = TrackerCategory(title: categoryName, trackers: [])
-            try categoryStore.addCategory(newCategory)
-            fetchCategories()
+            try await categoryStore.addCategory(newCategory)
+            await fetchCategories()
         } catch {
-            onError?("Ошибка при добавлении категории: \(error)")
+            onError?("Ошибка при добавлении категории: \(error.localizedDescription)")
         }
     }
-
-    func deleteCategory(at index: Int) {
+    
+    func deleteCategory(at index: Int) async {
         let category = categories[index]
         do {
-            try categoryStore.deleteCategory(category)
-            fetchCategories()
+            try await categoryStore.deleteCategory(category)
+            await fetchCategories()
         } catch {
             onError?("Ошибка при удалении категории: \(error)")
         }
     }
-    
-    func updateCategory(_ category: TrackerCategory, with newTitle: String) {
+
+    func updateCategory(_ category: TrackerCategory, with newTitle: String) async {
         do {
-            try categoryStore.renameCategory(from: category, to: newTitle)
-            fetchCategories()
+            try await categoryStore.renameCategory(from: category, to: newTitle)
+            await fetchCategories()
         } catch {
             onError?("Ошибка при редактировании категории: \(error.localizedDescription)")
         }
     }
+
 }

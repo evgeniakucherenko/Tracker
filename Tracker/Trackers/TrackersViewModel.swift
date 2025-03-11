@@ -17,9 +17,11 @@ final class TrackersViewModel {
     private var currentDate: Date = Date() {
         didSet {
             onDateChanged?(currentDate)
-            loadCompletedTrackers()
-            loadFilteredCategories()
-            onDataUpdated?()
+            Task {
+                await loadCompletedTrackers()
+                await loadFilteredCategories()
+                onDataUpdated?()
+            }
         }
     }
     
@@ -63,19 +65,37 @@ final class TrackersViewModel {
         self.filteringService = filteringService
         self.dateService = dateService
         self.trackerDataService = trackerDataService ?? TrackerDataService(trackerStore: trackerStore, categoryStore: categoryStore)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onTrackerUpdatedNotification),
+            name: .trackerUpdated,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .trackerUpdated, object: nil)
+    }
+    
+    @objc private func onTrackerUpdatedNotification(_ notification: Notification) {
+        Task {
+            await loadInitialData()
+            onDataUpdated?()
+        }
     }
     
     // MARK: - Data Loading Methods
-    func loadInitialData() {
-        loadCategories()
-        loadCompletedTrackers()
-        loadFilteredCategories()
+    func loadInitialData() async {
+        await loadCategories()
+        await loadCompletedTrackers()
+        await loadFilteredCategories()
         onDataUpdated?()
     }
     
-    private func loadCategories() {
+    private func loadCategories() async {
         do {
-            let fetchedCategories = try trackerDataService.loadCategories()
+            let fetchedCategories = try await trackerDataService.loadCategories()
             self.categories = fetchedCategories
             self.trackerToCategoryMap = fetchedCategories.reduce(into: [:]) { result, category in
                 for tracker in category.trackers {
@@ -87,16 +107,16 @@ final class TrackersViewModel {
         }
     }
     
-    private func loadCompletedTrackers() {
+    private func loadCompletedTrackers() async {
         do {
-            let completedSet = try trackerDataService.loadCompletedTrackers(for: currentDate)
+            let completedSet = try await trackerDataService.loadCompletedTrackers(for: currentDate)
             completedTrackers = completedSet
         } catch {
             onError?("Ошибка при загрузке выполненных трекеров: \(error.localizedDescription)")
         }
     }
     
-    private func loadFilteredCategories() {
+    private func loadFilteredCategories() async {
         updateFilteredCategories()
     }
     
@@ -123,60 +143,43 @@ final class TrackersViewModel {
     }
     
     // MARK: - Tracker Management
-    func addTracker(_ tracker: Tracker, to category: String) {
+    func addTracker(_ tracker: Tracker, to category: String) async {
         do {
-            try trackerDataService.addTracker(tracker, to: category)
-            loadCategories()
-            loadFilteredCategories()
+            try await trackerDataService.addTracker(tracker, to: category)
+            await loadCategories()
+            await loadFilteredCategories()
             onDataUpdated?()
         } catch {
             onError?("Ошибка при добавлении трекера: \(error.localizedDescription)")
         }
     }
 
-    func deleteTracker(_ tracker: Tracker) {
+    func deleteTracker(_ tracker: Tracker) async {
         do {
-            try trackerDataService.deleteTracker(tracker)
-
-            if let categoryIndex = categories.firstIndex(where: { $0.trackers.contains(where: { $0.id == tracker.id }) }) {
-                let category = categories[categoryIndex]
-                let updatedTrackers = category.trackers.filter { $0.id != tracker.id }
-
-                if updatedTrackers.isEmpty {
-                    categories.remove(at: categoryIndex)
-                    try trackerDataService.deleteCategory(category)
-                } else {
-                    let updatedCategory = TrackerCategory(title: category.title, trackers: updatedTrackers)
-                    categories[categoryIndex] = updatedCategory
-                    try trackerDataService.updateCategory(updatedCategory)
-                }
-            }
-
-            pinnedTrackersService.unpinTracker(tracker)
-            trackerToCategoryMap.removeValue(forKey: tracker.id)
-
-            loadFilteredCategories()
+            try await trackerDataService.deleteTracker(tracker)
+            await loadCategories()
+            await loadFilteredCategories()
             onDataUpdated?()
         } catch {
             onError?("Ошибка при удалении трекера: \(error.localizedDescription)")
         }
     }
     
-    func toggleTrackerCompletion(_ tracker: Tracker) {
+    func toggleTrackerCompletion(_ tracker: Tracker) async {
         guard dateService.isPastOrToday(currentDate) else { return }
         do {
-            try trackerDataService.toggleTrackerCompletion(tracker, on: currentDate)
-            loadCompletedTrackers()
-            loadFilteredCategories()
+            try await trackerDataService.toggleTrackerCompletion(tracker, on: currentDate)
+            await loadCompletedTrackers()
+            await loadFilteredCategories()
             onDataUpdated?()
         } catch {
             onError?("Ошибка при изменении статуса трекера: \(error.localizedDescription)")
         }
     }
     
-    func getCompletionCount(for tracker: Tracker) -> Int {
+    func getCompletionCount(for tracker: Tracker) async -> Int {
         do {
-            return try trackerDataService.getCompletionCount(for: tracker)
+            return try await trackerDataService.getCompletionCount(for: tracker)
         } catch {
             onError?("Ошибка при получении количества выполнений: \(error.localizedDescription)")
             return 0
@@ -186,48 +189,47 @@ final class TrackersViewModel {
     func isTrackerCompleted(_ tracker: Tracker) -> Bool {
         return completedTrackers.contains(tracker.id)
     }
+    
+    func getTracker(at indexPath: IndexPath) -> Tracker? {
+           guard indexPath.section < filteredCategories.count,
+                 indexPath.row < filteredCategories[indexPath.section].trackers.count else {
+               return nil
+           }
+           return filteredCategories[indexPath.section].trackers[indexPath.row]
+       }
 
     // MARK: - Pinning Methods
     func pinTracker(_ tracker: Tracker) {
         categoryManagementService.removeTrackerFromItsCategory(tracker)
         pinnedTrackersService.pinTracker(tracker)
-        loadFilteredCategories()
+        updateFilteredCategories()
         onDataUpdated?()
     }
 
     func unpinTracker(_ tracker: Tracker) {
         pinnedTrackersService.unpinTracker(tracker)
         categoryManagementService.addTrackerToOriginalCategory(tracker)
-        loadFilteredCategories()
+        updateFilteredCategories()
         onDataUpdated?()
     }
     
-    // MARK: - Table View Data Source Helpers
-    func getTracker(at indexPath: IndexPath) -> Tracker? {
-        guard indexPath.section < filteredCategories.count,
-              indexPath.row < filteredCategories[indexPath.section].trackers.count else {
-            return nil
+        func numberOfSections() -> Int {
+            return filteredCategories.count
         }
-        return filteredCategories[indexPath.section].trackers[indexPath.row]
-    }
-
-    func numberOfSections() -> Int {
-        return filteredCategories.count
-    }
-
-    func numberOfItems(in section: Int) -> Int {
-        guard section < filteredCategories.count else { return 0 }
-        return filteredCategories[section].trackers.count
-    }
-
-    func titleForSection(_ section: Int) -> String? {
-        guard section < filteredCategories.count else { return nil }
-        return filteredCategories[section].title
-    }
+    
+        func numberOfItems(in section: Int) -> Int {
+            guard section < filteredCategories.count else { return 0 }
+            return filteredCategories[section].trackers.count
+        }
+    
+        func titleForSection(_ section: Int) -> String? {
+            guard section < filteredCategories.count else { return nil }
+            return filteredCategories[section].title
+        }
 }
 
 extension TrackersViewModel {
-    func filterTrackers(with query: String) {
+    func filterTrackers(with query: String) async {
         filteredCategories = categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { $0.name.lowercased().contains(query) }
             return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
@@ -235,8 +237,8 @@ extension TrackersViewModel {
         onDataUpdated?()
     }
 
-    func clearSearch() {
-        loadFilteredCategories()
+    func clearSearch() async {
+        await loadFilteredCategories()
         onDataUpdated?()
     }
 }

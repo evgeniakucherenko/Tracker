@@ -6,6 +6,8 @@ final class CreateTrackerController: UIViewController {
     weak var delegate: CreateTrackerControllerDelegate?
     private var categoryStore: TrackerCategoryStoreProtocol
     
+    var coordinator: TrackersCoordinator?
+    
     init(categoryStore: TrackerCategoryStoreProtocol) {
         self.categoryStore = categoryStore
         super.init(nibName: nil, bundle: nil)
@@ -18,7 +20,7 @@ final class CreateTrackerController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         setupNavBar()
         setupViews()
         setupConstraints()
@@ -73,15 +75,11 @@ final class CreateTrackerController: UIViewController {
         ])
     }
     
-    // MARK: - Actions
-    
+//    // MARK: - Actions
     @objc private func habitButtonTapped() {
-        let createHabitsController = HabitsController(categoryStore: categoryStore)
-        createHabitsController.createHabitsDelegate = self
-        let navController = UINavigationController(rootViewController: createHabitsController)
-        present(navController, animated: true, completion: nil)
+            coordinator?.showCreateHabits(delegate: self)
     }
-
+    
     @objc private func irregularEventButtonTapped() {
         let viewModel = IrregularEventViewModel(categoryStore: categoryStore)
         let irregularEventController = IrregularEventController(viewModel: viewModel)
@@ -92,17 +90,13 @@ final class CreateTrackerController: UIViewController {
 }
 
 extension CreateTrackerController: CreateHabitsControllerDelegate & IrregularEventControllerDelegate {
-    
-    func didCreateTracker(_ tracker: Tracker, inCategory category: String) {
-        delegate?.didCreateTracker(tracker, inCategory: category)
+    func didCreateTracker(_ tracker: Tracker, inCategory category: String) async {
+        await delegate?.didCreateTracker(tracker, inCategory: category)
         dismiss(animated: true, completion: nil)
     }
 
-    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) {
-        delegate?.didCreateIrregularEvent(tracker, inCategory: category)
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) async {
+        await delegate?.didCreateIrregularEvent(tracker, inCategory: category)
         dismiss(animated: true, completion: nil)
     }
 }
-
-
-

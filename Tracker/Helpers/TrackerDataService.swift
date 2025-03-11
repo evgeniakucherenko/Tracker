@@ -9,59 +9,60 @@ final class TrackerDataService: TrackerDataServiceProtocol {
         self.categoryStore = categoryStore
     }
 
-    func loadCategories() throws -> [TrackerCategory] {
-        return try categoryStore.fetchAllCategories()
+    func loadCategories() async throws -> [TrackerCategory] {
+        return try await categoryStore.fetchAllCategories()
     }
 
-    func loadCompletedTrackers(for date: Date) throws -> Set<UUID> {
-        let records = try trackerStore.fetchAllTrackerRecords()
+    // Загрузка выполненных трекеров для даты
+    func loadCompletedTrackers(for date: Date) async throws -> Set<UUID> {
+        let records = try await trackerStore.fetchAllTrackerRecords()
         let filteredRecords = records.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
         return Set(filteredRecords.map { $0.id })
     }
 
-    func addTracker(_ tracker: Tracker, to category: String) throws {
-        // Пример добавления трекера в категорию:
-        var allCategories = try categoryStore.fetchAllCategories()
+    func addTracker(_ tracker: Tracker, to category: String) async throws {
+        var allCategories = try await categoryStore.fetchAllCategories()
+        
         if let index = allCategories.firstIndex(where: { $0.title == category }) {
             let oldCategory = allCategories[index]
             let updatedTrackers = oldCategory.trackers + [tracker]
             let updatedCategory = TrackerCategory(title: oldCategory.title, trackers: updatedTrackers)
             allCategories[index] = updatedCategory
-            try categoryStore.updateCategory(updatedCategory)
+            try await categoryStore.updateCategory(updatedCategory)
         } else {
             let newCategory = TrackerCategory(title: category, trackers: [tracker])
             allCategories.append(newCategory)
-            try categoryStore.addCategory(newCategory)
+            try await categoryStore.addCategory(newCategory)
         }
-        try trackerStore.addNewTracker(tracker)
+        
+        try await trackerStore.addNewTracker(tracker)
     }
 
-    func deleteTracker(_ tracker: Tracker) throws {
-        try trackerStore.deleteTracker(tracker)
+    func deleteTracker(_ tracker: Tracker) async throws {
+        try await trackerStore.deleteTracker(tracker)
     }
 
-    func toggleTrackerCompletion(_ tracker: Tracker, on date: Date) throws {
-        try trackerStore.toggleTrackerCompletion(tracker, on: date)
+    func toggleTrackerCompletion(_ tracker: Tracker, on date: Date) async throws {
+        try await trackerStore.toggleTrackerCompletion(tracker, on: date)
     }
 
-    func updateCategory(_ category: TrackerCategory) throws {
-        try categoryStore.updateCategory(category)
+    func updateCategory(_ category: TrackerCategory) async throws {
+        try await categoryStore.updateCategory(category)
     }
 
-    func addCategory(_ category: TrackerCategory) throws {
-        try categoryStore.addCategory(category)
+    func addCategory(_ category: TrackerCategory) async throws {
+        try await categoryStore.addCategory(category)
     }
 
-    func deleteCategory(_ category: TrackerCategory) throws {
-        try categoryStore.deleteCategory(category)
+    func deleteCategory(_ category: TrackerCategory) async throws {
+        try await categoryStore.deleteCategory(category)
     }
 
-    func getCompletionCount(for tracker: Tracker) throws -> Int {
-        return try trackerStore.getCompletionCount(for: tracker)
+    func getCompletionCount(for tracker: Tracker) async throws -> Int {
+        return try await trackerStore.getCompletionCount(for: tracker)
     }
 
-    func addNewTracker(_ tracker: Tracker) throws {
-        try trackerStore.addNewTracker(tracker)
+    func addNewTracker(_ tracker: Tracker) async throws {
+        try await trackerStore.addNewTracker(tracker)
     }
 }
-

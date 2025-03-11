@@ -51,10 +51,12 @@ final class IrregularEventController: BaseCreateTrackerController<IrregularEvent
             self.categoryButton.update(title: "Категория", subtitle: subtitle)
         }
     }
-
+    
     override func handleCreateTracker(tracker: Tracker, category: String) {
-        irregularEventDelegate?.didCreateIrregularEvent(tracker, inCategory: category)
-        closeModalAndSwitchToTab(index: 0)
+        Task {
+            await irregularEventDelegate?.didCreateIrregularEvent(tracker, inCategory: category)
+            closeModalAndSwitchToTab(index: 0)
+        }
     }
 
     @objc private func categoryButtonTapped() {

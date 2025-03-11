@@ -7,12 +7,17 @@ final class CategoryViewController: ThemedViewController {
     weak var delegate: CategorySelectionDelegate?
     private var selectedCategory: TrackerCategory?
     private var viewModel: CategoryViewModel
+    
+    weak var coordinator: CategoryCoordinator?
 
     private var categories: [TrackerCategory] = [] {
         didSet {
-            tableView.isHidden = categories.isEmpty
-            placeholderImage.isHidden = !categories.isEmpty
-            labelImage.isHidden = !categories.isEmpty
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.tableView.isHidden = self.categories.isEmpty
+                self.placeholderImage.isHidden = !self.categories.isEmpty
+                self.labelImage.isHidden = !self.categories.isEmpty
+            }
         }
     }
 
@@ -75,10 +80,12 @@ final class CategoryViewController: ThemedViewController {
         setupConstraints()
         setupBindings()
         
-        viewModel.fetchCategories()
-        updateTheme()
+        Task {
+            await viewModel.fetchCategories()
+            updateTheme()
+        }
     }
-    
+
     // MARK: - Setup Methods
     private func setupNavBar() {
         let category = NSLocalizedString("category", comment: "")
@@ -114,8 +121,10 @@ final class CategoryViewController: ThemedViewController {
     
     private func setupBindings() {
         viewModel.onCategoriesUpdated = { [weak self] updatedCategories in
-            self?.categories = updatedCategories
-            self?.tableView.reloadData()
+            DispatchQueue.main.async {
+                self?.categories = updatedCategories
+                self?.tableView.reloadData()
+            }
         }
         
         viewModel.onError = { errorMessage in
@@ -125,14 +134,14 @@ final class CategoryViewController: ThemedViewController {
     
     // MARK: - Actions
     @objc private func addCategoryButtonTapped() {
-        let createCategoryViewModel = CreateCategoryViewModel()
-        let createCategoryVC = CreateCategoryViewController(viewModel: createCategoryViewModel)
-        createCategoryVC.onCategoryCreated = { [weak self] newCategory in
-            self?.viewModel.addCategory(newCategory.title)
+        coordinator?.showCreateCategory { [weak self] newCategory in
+            guard let self = self else { return }
+            
+            Task {
+                await self.viewModel.addCategory(newCategory.title)
+                await self.viewModel.fetchCategories()
+            }
         }
-        let navController = UINavigationController(rootViewController: createCategoryVC)
-        navController.modalPresentationStyle = .formSheet
-        present(navController, animated: true, completion: nil)
     }
 }
 
@@ -166,6 +175,9 @@ extension CategoryViewController: UITableViewDelegate {
         selectedCategory = categories[indexPath.row]
         tableView.reloadData()
         
+        let selectedCategoryName = selectedCategory?.title ?? ""
+            print("📌 Выбрана категория: \(selectedCategoryName)")
+        
         delegate?.didSelectCategory(selectedCategory?.title ?? "")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -174,34 +186,34 @@ extension CategoryViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        let category = categories[indexPath.row]
+          let category = categories[indexPath.row]
 
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
-            let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { [weak self] _ in
-                self?.presentEditCategoryScreen(for: category)
-            }
+          return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+              let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { [weak self] _ in
+                  self?.presentEditCategoryScreen(for: category)
+              }
 
-            let deleteAction = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
-                self?.deleteCategory(category, at: indexPath)
-            }
+              let deleteAction = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+                  self?.deleteCategory(category, at: indexPath)
+              }
 
-            return UIMenu(title: category.title, children: [editAction, deleteAction])
-        }
-    }
+              return UIMenu(title: category.title, children: [editAction, deleteAction])
+          }
+      }
     
     private func presentEditCategoryScreen(for category: TrackerCategory) {
         let editCategoryViewModel = CreateCategoryViewModel()
         let editCategoryVC = CreateCategoryViewController(viewModel: editCategoryViewModel, editableCategory: category)
         
         editCategoryVC.onCategoryUpdated = { [weak self] updatedCategory in
-            do {
-                try self?.viewModel.updateCategory(category, with: updatedCategory.title)
-                self?.viewModel.fetchCategories()
-            } catch {
-                print("Ошибка обновления категории: \(error.localizedDescription)")
+            guard let self = self else { return }
+            
+            Task {
+                await self.viewModel.updateCategory(category, with: updatedCategory.title)
+                await self.viewModel.fetchCategories()
             }
         }
-        
+
         let navController = UINavigationController(rootViewController: editCategoryVC)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true, completion: nil)
@@ -215,9 +227,13 @@ extension CategoryViewController: UITableViewDelegate {
         )
         
         let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
-            self?.viewModel.deleteCategory(at: indexPath.row)
+            guard let self = self else { return }
+            
+            Task {
+                await self.viewModel.deleteCategory(at: indexPath.row)
+            }
         }
-        
+
         let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
         
         alert.addAction(deleteAction)
@@ -225,5 +241,4 @@ extension CategoryViewController: UITableViewDelegate {
         
         present(alert, animated: true, completion: nil)
     }
-
 }
