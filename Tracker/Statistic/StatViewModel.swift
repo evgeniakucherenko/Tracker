@@ -40,6 +40,11 @@ final class StatViewModel {
     // MARK: - Private Methods
     private func calculateBestPeriod(from records: [TrackerRecord]) -> Int {
         let sortedDates = records.map { $0.date }.sorted()
+        
+        // ✅ Проверяем, что есть хотя бы 2 даты, иначе нет смысла вычислять
+           guard sortedDates.count > 1 else { return 0 }
+        
+        
         var bestPeriod = 0
         var currentPeriod = 1
 

@@ -148,6 +148,7 @@ final class TrackersViewModel {
             try await trackerDataService.addTracker(tracker, to: category)
             await loadCategories()
             await loadFilteredCategories()
+            print("✅ TrackersViewModel: onDataUpdated вызван")
             onDataUpdated?()
         } catch {
             onError?("Ошибка при добавлении трекера: \(error.localizedDescription)")

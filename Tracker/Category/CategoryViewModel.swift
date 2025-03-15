@@ -53,5 +53,4 @@ final class CategoryViewModel {
             onError?("Ошибка при редактировании категории: \(error.localizedDescription)")
         }
     }
-
 }

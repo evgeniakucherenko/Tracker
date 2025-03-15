@@ -47,7 +47,6 @@ final class EditTrackerController: UIViewController {
         return button
     }()
 
-    
     private lazy var nameTextField: CustomTextField = {
         let textField = CustomTextField()
         let trackerNameTextField = NSLocalizedString("trackerNameTextField", comment: "")
@@ -198,7 +197,7 @@ final class EditTrackerController: UIViewController {
     @objc private func categoryButtonTapped() {
         let categoryViewModel = CategoryViewModel(categoryStore: viewModel.categoryStoreRef)
         let categoryViewController = CategoryViewController(viewModel: categoryViewModel)
-        categoryViewController.delegate = self
+        //categoryViewController.delegate = self
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true)
@@ -242,13 +241,13 @@ final class EditTrackerController: UIViewController {
     }
 }
 
-extension EditTrackerController: CategorySelectionDelegate {
-    func didSelectCategory(_ categoryName: String) {
-        viewModel.selectedCategory = categoryName
-        categoryButton.update(title: "Категория", subtitle: categoryName)
-        validateInputs()
-    }
-}
+//extension EditTrackerController: CategorySelectionDelegate {
+//    func didSelectCategory(_ categoryName: String) {
+//        viewModel.selectedCategory = categoryName
+//        categoryButton.update(title: "Категория", subtitle: categoryName)
+//        validateInputs()
+//    }
+//}
 
 extension EditTrackerController: ScheduleViewControllerDelegate {
     func didSelect(days: Set<Weekday>) {

@@ -1,6 +1,11 @@
 import UIKit
 
 final class IrregularEventController: BaseCreateTrackerController<IrregularEventViewModel>, CategorySelectionDelegate {
+    
+    func didSelectCategory(_ category: TrackerCategory) {
+        print("")
+    }
+    
     weak var irregularEventDelegate: IrregularEventControllerDelegate?
 
     private lazy var categoryButton: CustomSelectionButton = {

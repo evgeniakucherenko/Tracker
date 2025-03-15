@@ -25,6 +25,12 @@ protocol CreateTrackerControllerDelegate: AnyObject {
     func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) async
 }
 
+protocol TrackersViewControllerDelegate: AnyObject {
+    func showCreateTracker(delegate: CreateTrackerControllerDelegate)
+    func showFilterScreen(delegate: TrackersFilteringCoordinatorDelegate)
+    func didSelectFilter(at index: Int)
+}
+
 // Расписание
 protocol ScheduleViewControllerDelegate: AnyObject {
     func didSelect(days: Set<Weekday>)

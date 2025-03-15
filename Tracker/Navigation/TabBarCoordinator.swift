@@ -1,63 +1,55 @@
 import Foundation
 import UIKit
 
-final class TabBarCoordinator: Coordinator {
-
-    var navigationController: UINavigationController
+final class TabBarCoordinator: BaseCoordinator {
     private var trackersCoordinator: TrackersCoordinator?
+    private var statisticsCoordinator: StatisticsCoordinator?
+    private let dependencies: CoordinatorDependencies
+    private let statisticsService: StatisticsServiceProtocol
+    private let screenFactory: ScreenFactory
 
-    private let trackerStore: TrackerStoreProtocol
-    private let categoryStore: TrackerCategoryStoreProtocol
-    private let trackerRecordStore: TrackerRecordStoreProtocol
+    init(navigationController: UINavigationController, dependencies: CoordinatorDependencies) {
+        self.dependencies = dependencies
+        self.statisticsService = StatisticsService(
+            trackerStore: dependencies.trackerStore,
+            trackerRecordStore: dependencies.trackerRecordStore
+        )
 
-    init(
-        trackerStore: TrackerStoreProtocol,
-        categoryStore: TrackerCategoryStoreProtocol,
-        trackerRecordStore: TrackerRecordStoreProtocol
-    ) {
-        self.navigationController = UINavigationController()
-        self.trackerStore = trackerStore
-        self.categoryStore = categoryStore
-        self.trackerRecordStore = trackerRecordStore
+        self.screenFactory = ScreenFactory(dependencies: dependencies)
+        super.init(navigationController: navigationController)
     }
 
-    func start() {
+    override func start() {
         let tabBarController = CustomTabBarController()
+        
+        let screenFactory = ScreenFactory(dependencies: dependencies)
 
-        let trackersCoord = TrackersCoordinator(
-            navigationController: UINavigationController(),
-            trackerStore: trackerStore,
-            categoryStore: categoryStore
-        )
+        let trackersCoord = CoordinatorBuilder<TrackersCoordinator>(dependencies: dependencies)
+            .setInitializer { TrackersCoordinator(navigationController: $0, dependencies: $1, screenFactory: screenFactory) } // ✅ Передаём объект
+            .build(navigationController: UINavigationController())
 
         trackersCoord.start()
+        childCoordinators.append(trackersCoord)
 
-        self.trackersCoordinator = trackersCoord
-
-        let statisticsViewModel = StatViewModel(
-            trackerStore: trackerStore,
-            trackerRecordStore: trackerRecordStore
+        let statisticsCoord = StatisticsCoordinator(
+            navigationController: UINavigationController(),
+            statisticsService: statisticsService // <-- Передаём сервис, а не ViewModel
         )
-        let statisticsVC = StatViewController(viewModel: statisticsViewModel)
-        let statisticsNav = UINavigationController(rootViewController: statisticsVC)
+
+        statisticsCoord.start()
+        childCoordinators.append(statisticsCoord)
 
         let nameTabBarTrackers = NSLocalizedString("trackers", comment: "")
-        let nameTabBarStatistics = NSLocalizedString("statistics", comment: "")
 
         trackersCoord.navigationController.tabBarItem = UITabBarItem(
             title: nameTabBarTrackers,
             image: UIImage(named: "trackers_icon"),
             tag: 0
         )
-        statisticsNav.tabBarItem = UITabBarItem(
-            title: nameTabBarStatistics,
-            image: UIImage(named: "stats_icon"),
-            tag: 1
-        )
 
         tabBarController.viewControllers = [
             trackersCoord.navigationController,
-            statisticsNav
+            statisticsCoord.navigationController 
         ]
 
         navigationController.setViewControllers([tabBarController], animated: false)

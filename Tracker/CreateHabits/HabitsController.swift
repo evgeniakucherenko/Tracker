@@ -1,9 +1,9 @@
 import UIKit
 
 final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
-                                    ScheduleViewControllerDelegate,
-                                    CategorySelectionDelegate {
-
+                              CategorySelectionDelegate {
+    
+    weak var navigationDelegate: HabitsNavigationDelegate?
     weak var createHabitsDelegate: CreateHabitsControllerDelegate?
     
     private lazy var categoryButton: CustomSelectionButton = {
@@ -12,7 +12,6 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
         button.layer.cornerRadius = 16
         button.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         button.addTarget(self, action: #selector(categoryButtonTapped), for: .touchUpInside)
-        print("🟢 categoryButton создан, target установлен")
         return button
     }()
 
@@ -32,11 +31,11 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
         return view
     }()
 
-    init(categoryStore: TrackerCategoryStoreProtocol) {
-        let viewModel = HabitsViewModel(categoryStore: categoryStore)
+    override init(viewModel: HabitsViewModel) {
         super.init(viewModel: viewModel)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -106,27 +105,17 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
     }
      
     @objc private func categoryButtonTapped() {
-        if let coordinator = coordinator {
-            coordinator.showCategoryScreen(delegate: self)
-        } else {
-            print("🔴 Координатор равен nil в categoryButtonTapped")
-        }
+        navigationDelegate?.showCategoryScreen()
     }
-
+    
     @objc private func scheduleButtonTapped() {
-        let selectedDays = Set<Weekday>()
-        let scheduleViewModel = ScheduleViewModel(initialSelectedDays: selectedDays)
-        let scheduleViewController = ScheduleViewController(viewModel: scheduleViewModel)
-        scheduleViewController.scheduleDelegate = self
-        let navController = UINavigationController(rootViewController: scheduleViewController)
-        present(navController, animated: true, completion: nil)
+        navigationDelegate?.showScheduleScreen(currentlySelectedDays: viewModel.selectedDays)
     }
 
+    // MARK: - CategorySelectionDelegate
     func didSelectCategory(_ categoryName: String) {
+        print("🟢 HabitsController: выбрана категория \(categoryName)")
         viewModel.selectCategory(categoryName)
-    }
-
-    func didSelect(days: Set<Weekday>) {
-        viewModel.updateSelectedDays(days)
+        categoryButton.update(title: "Категория", subtitle: categoryName)
     }
 }

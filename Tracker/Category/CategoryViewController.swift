@@ -9,6 +9,10 @@ final class CategoryViewController: ThemedViewController {
     private var viewModel: CategoryViewModel
     
     weak var coordinator: CategoryCoordinator?
+    
+    var onCategorySelected: ((String) -> Void)?
+    var onAddCategoryTapped: (() -> Void)?
+    var onCategoryCreated: ((String) -> Void)?
 
     private var categories: [TrackerCategory] = [] {
         didSet {
@@ -134,14 +138,7 @@ final class CategoryViewController: ThemedViewController {
     
     // MARK: - Actions
     @objc private func addCategoryButtonTapped() {
-        coordinator?.showCreateCategory { [weak self] newCategory in
-            guard let self = self else { return }
-            
-            Task {
-                await self.viewModel.addCategory(newCategory.title)
-                await self.viewModel.fetchCategories()
-            }
-        }
+        onAddCategoryTapped?()
     }
 }
 
@@ -185,39 +182,41 @@ extension CategoryViewController: UITableViewDelegate {
         }
     }
     
+    // ПОКА НЕ РЕАЛИЗУЕМ
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
           let category = categories[indexPath.row]
 
           return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
-              let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { [weak self] _ in
-                  self?.presentEditCategoryScreen(for: category)
-              }
+//              let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { [weak self] _ in
+//                  self?.presentEditCategoryScreen(for: category)
+//              }
 
               let deleteAction = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
                   self?.deleteCategory(category, at: indexPath)
               }
 
-              return UIMenu(title: category.title, children: [editAction, deleteAction])
+              return UIMenu(title: category.title, children: [ deleteAction])
           }
       }
     
-    private func presentEditCategoryScreen(for category: TrackerCategory) {
-        let editCategoryViewModel = CreateCategoryViewModel()
-        let editCategoryVC = CreateCategoryViewController(viewModel: editCategoryViewModel, editableCategory: category)
-        
-        editCategoryVC.onCategoryUpdated = { [weak self] updatedCategory in
-            guard let self = self else { return }
-            
-            Task {
-                await self.viewModel.updateCategory(category, with: updatedCategory.title)
-                await self.viewModel.fetchCategories()
-            }
-        }
-
-        let navController = UINavigationController(rootViewController: editCategoryVC)
-        navController.modalPresentationStyle = .formSheet
-        present(navController, animated: true, completion: nil)
-    }
+    // ПОКА НЕ РЕАЛИЗУЕМ
+//    private func presentEditCategoryScreen(for category: TrackerCategory) {
+//        let editCategoryViewModel = CreateCategoryViewModel()
+//        let editCategoryVC = CreateCategoryViewController(viewModel: editCategoryViewModel, editableCategory: category)
+//        
+//        editCategoryVC.onCategoryUpdated = { [weak self] updatedCategory in
+//            guard let self = self else { return }
+//            
+//            Task {
+//                await self.viewModel.updateCategory(category, with: updatedCategory.title)
+//                await self.viewModel.fetchCategories()
+//            }
+//        }
+//
+//        let navController = UINavigationController(rootViewController: editCategoryVC)
+//        navController.modalPresentationStyle = .formSheet
+//        present(navController, animated: true, completion: nil)
+//    }
     
     private func deleteCategory(_ category: TrackerCategory, at indexPath: IndexPath) {
         let alert = UIAlertController(

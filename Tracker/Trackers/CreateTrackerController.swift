@@ -5,8 +5,8 @@ final class CreateTrackerController: UIViewController {
     
     weak var delegate: CreateTrackerControllerDelegate?
     private var categoryStore: TrackerCategoryStoreProtocol
-    
-    var coordinator: TrackersCoordinator?
+
+    weak var navigationDelegate: CreateTrackerControllerNavigationDelegate?
     
     init(categoryStore: TrackerCategoryStoreProtocol) {
         self.categoryStore = categoryStore
@@ -75,22 +75,22 @@ final class CreateTrackerController: UIViewController {
         ])
     }
     
-//    // MARK: - Actions
+    // MARK: - Actions
     @objc private func habitButtonTapped() {
-            coordinator?.showCreateHabits(delegate: self)
+        navigationDelegate?.startHabitsFlow()
     }
     
     @objc private func irregularEventButtonTapped() {
-        let viewModel = IrregularEventViewModel(categoryStore: categoryStore)
-        let irregularEventController = IrregularEventController(viewModel: viewModel)
-        irregularEventController.irregularEventDelegate = self
-        let navController = UINavigationController(rootViewController: irregularEventController)
-        present(navController, animated: true, completion: nil)
+        navigationDelegate?.showIrregularEvent(delegate: self)
     }
 }
 
+// MARK: - Создание трекера/события
 extension CreateTrackerController: CreateHabitsControllerDelegate & IrregularEventControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, inCategory category: String) async {
+        print("✅ CreateTrackerController: didCreateTracker вызван")
+        print("📌 Перед вызовом делегата: delegate = \(String(describing: delegate))")
+        
         await delegate?.didCreateTracker(tracker, inCategory: category)
         dismiss(animated: true, completion: nil)
     }
@@ -100,3 +100,4 @@ extension CreateTrackerController: CreateHabitsControllerDelegate & IrregularEve
         dismiss(animated: true, completion: nil)
     }
 }
+

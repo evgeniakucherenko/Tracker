@@ -272,4 +272,3 @@ class BaseCreateTrackerController<ViewModelType: BaseCreateTrackerViewModel>: UI
         return true
     }
 }
-

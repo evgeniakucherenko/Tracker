@@ -6,7 +6,7 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
 
     var viewModel: TrackersViewModel
     var alertPresenter: AlertPresenter!
-    weak var coordinator: TrackersCoordinator?
+    weak var delegate: TrackersViewControllerDelegate?
 
     // MARK: - UI Elements
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -148,11 +148,11 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
 
     // MARK: - Actions
     @objc private func filterButtonTapped() {
-        coordinator?.showFilterScreen(delegate: self)
+        delegate?.showFilterScreen(delegate: self) 
     }
     
     @objc private func addButtonTapped() {
-        coordinator?.showCreateTracker(delegate: self)
+        delegate?.showCreateTracker(delegate: self)
     }
     
     @objc private func dateChanged() {
@@ -165,18 +165,20 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
         labelImage.isHidden = isContentAvailable
     }
     
+    // Пока не реализуем 
     func presentEditTrackerScreen(for tracker: Tracker) {
-        coordinator?.showEditTrackerScreen(
-            for: tracker,
-            categoryStore: viewModel.categoryStore,
-            trackerStore: viewModel.trackerStoreRef
-        )
+//        coordinator?.showEditTrackerScreen(
+//            for: tracker,
+//            categoryStore: viewModel.categoryStore,
+//            trackerStore: viewModel.trackerStoreRef
+//        )
     }
 }
 
 // MARK: - CreateTrackerControllerDelegate & TrackersFilteringControllerDelegate 
 extension TrackersViewController {
     func didCreateTracker(_ tracker: Tracker, inCategory category: String) async {
+        print("✅ TrackersViewController: didCreateTracker вызван")
         await viewModel.addTracker(tracker, to: category)
     }
 
@@ -185,8 +187,9 @@ extension TrackersViewController {
     }
 }
 
-extension TrackersViewController: TrackersFilteringControllerDelegate {
+extension TrackersViewController: TrackersFilteringCoordinatorDelegate {
     func didSelectFilter(at index: Int) {
+        print("🟢 TrackersViewController получил фильтр:", index)
         viewModel.applyFilter(at: index)
         collectionView.reloadData()
     }

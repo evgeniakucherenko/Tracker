@@ -18,4 +18,3 @@ class CoreDataStore: NSObject, NSFetchedResultsControllerDelegate {
         onChangeCallback?()
     }
 }
-

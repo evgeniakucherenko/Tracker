@@ -6,31 +6,38 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     private var tabBarCoordinator: TabBarCoordinator?
 
-        func scene(_ scene: UIScene,
-                   willConnectTo session: UISceneSession,
-                   options connectionOptions: UIScene.ConnectionOptions) {
+    func scene(_ scene: UIScene,
+               willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        
+        window = UIWindow(windowScene: windowScene)
+        
+        // Создаем зависимости
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let trackerRecordStore = TrackerRecordStore(context: context)
+        let trackerStore = TrackerStore(context: context, trackerRecordStore: trackerRecordStore)
+        let categoryStore = TrackerCategoryStore(context: context)
+        
+        // Создаем зависимости через CoordinatorDependencies
+        let dependencies = CoordinatorDependencies(
+            trackerStore: trackerStore,
+            categoryStore: categoryStore,
+            trackerRecordStore: trackerRecordStore
+        )
+        
+        // Используем CoordinatorBuilder для создания TabBarCoordinator
+        let coordinator = CoordinatorBuilder<TabBarCoordinator>(dependencies: dependencies)
+            .setInitializer { TabBarCoordinator(navigationController: $0, dependencies: $1) }
+            .build(navigationController: UINavigationController())
 
-            guard let windowScene = (scene as? UIWindowScene) else { return }
+        coordinator.start()
 
-            window = UIWindow(windowScene: windowScene)
-            
-            let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-            let trackerRecordStore = TrackerRecordStore(context: context)
-            let trackerStore = TrackerStore(context: context, trackerRecordStore: trackerRecordStore)
-            let categoryStore = TrackerCategoryStore(context: context)
+        self.tabBarCoordinator = coordinator
 
-            let coordinator = TabBarCoordinator(
-                trackerStore: trackerStore,
-                categoryStore: categoryStore,
-                trackerRecordStore: trackerRecordStore
-            )
-            coordinator.start()
-
-            self.tabBarCoordinator = coordinator
-
-            window?.rootViewController = coordinator.navigationController
-            window?.makeKeyAndVisible()
-        }
+        window?.rootViewController = coordinator.navigationController
+        window?.makeKeyAndVisible()
+    }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.

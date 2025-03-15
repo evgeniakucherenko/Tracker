@@ -2,7 +2,7 @@ import UIKit
 
 final class HabitsViewModel: BaseCreateTrackerViewModel {
     private var categoryStore: TrackerCategoryStoreProtocol
-    private var selectedDays: Set<Weekday> = []
+    var selectedDays: Set<Weekday> = []
 
     init(categoryStore: TrackerCategoryStoreProtocol) {
         self.categoryStore = categoryStore
