@@ -1,6 +1,6 @@
 import UIKit
 
-final class IrregularEventController: BaseCreateTrackerController<IrregularEventViewModel>, CategorySelectionDelegate {
+final class IrregularEventController: BaseCreateTrackerController<IrregularEventViewModel> {
     
     func didSelectCategory(_ category: TrackerCategory) {
         print("")
@@ -67,7 +67,7 @@ final class IrregularEventController: BaseCreateTrackerController<IrregularEvent
     @objc private func categoryButtonTapped() {
         let categoryViewModel = CategoryViewModel(categoryStore: viewModel.categoryStoreRef)
         let categoryViewController = CategoryViewController(viewModel: categoryViewModel)
-        categoryViewController.delegate = self
+        //categoryViewController.delegate = self
 
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet

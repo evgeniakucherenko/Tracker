@@ -17,17 +17,25 @@ class BaseCoordinator: Coordinator {
     func start() {
         assertionFailure("Subclasses must override start()")
     }
-    
-    func show(_ viewController: UIViewController, asModal: Bool = false) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self, let topNavController = self.getTopNavigationController() else { return }
 
-            if asModal {
-                let modalController = viewController as? UINavigationController ?? UINavigationController(rootViewController: viewController)
-                modalController.modalPresentationStyle = .fullScreen
+    func show(_ viewController: UIViewController) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let topNavController = self.getTopNavigationController() else {
+                print("❌ Не удалось получить topNavController")
+                return
+            }
+
+            let modalController = viewController as? UINavigationController ?? UINavigationController(rootViewController: viewController)
+            
+            modalController.modalPresentationStyle = .formSheet
+
+            if topNavController.presentedViewController != nil {
+                print("⚠️ Уже есть модальный экран, сначала закрываем его")
+                topNavController.dismiss(animated: true) {
+                    topNavController.present(modalController, animated: true)
+                }
+            } else {
                 topNavController.present(modalController, animated: true)
-            } else if !(viewController is UINavigationController) {
-                topNavController.pushViewController(viewController, animated: true)
             }
         }
     }

@@ -204,12 +204,14 @@ final class EditTrackerController: UIViewController {
     }
     
     @objc private func scheduleButtonTapped() {
-        let viewModel = ScheduleViewModel(initialSelectedDays: viewModel.selectedSchedule)
-        let scheduleViewController = ScheduleViewController(viewModel: viewModel)
-        scheduleViewController.scheduleDelegate = self
-        let navController = UINavigationController(rootViewController: scheduleViewController)
-        navController.modalPresentationStyle = .formSheet
-        present(navController, animated: true, completion: nil)
+        
+        print("")
+//        let viewModel = ScheduleViewModel(initialSelectedDays: viewModel.selectedSchedule)
+//        let scheduleViewController = ScheduleViewController(viewModel: viewModel)
+//        scheduleViewController.scheduleDelegate = self
+//        let navController = UINavigationController(rootViewController: scheduleViewController)
+//        navController.modalPresentationStyle = .formSheet
+//        present(navController, animated: true, completion: nil)
     }
 
     @objc private func hideKeyboard() {
@@ -240,14 +242,6 @@ final class EditTrackerController: UIViewController {
         validateInputs()
     }
 }
-
-//extension EditTrackerController: CategorySelectionDelegate {
-//    func didSelectCategory(_ categoryName: String) {
-//        viewModel.selectedCategory = categoryName
-//        categoryButton.update(title: "Категория", subtitle: categoryName)
-//        validateInputs()
-//    }
-//}
 
 extension EditTrackerController: ScheduleViewControllerDelegate {
     func didSelect(days: Set<Weekday>) {

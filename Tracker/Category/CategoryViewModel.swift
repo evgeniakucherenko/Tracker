@@ -1,17 +1,15 @@
-
 import UIKit
 
 final class CategoryViewModel {
+    
     private var categoryStore: TrackerCategoryStoreProtocol
+    weak var coordinator: CategoryCoordinator?
     
     private(set) var categories: [TrackerCategory] = [] {
         didSet {
-            onCategoriesUpdated?(categories)
+            coordinator?.updateCategoryScreen(with: categories)
         }
     }
-
-    var onCategoriesUpdated: Binding<[TrackerCategory]>?
-    var onError: Binding<String>?
 
     init(categoryStore: TrackerCategoryStoreProtocol) {
         self.categoryStore = categoryStore
@@ -19,29 +17,28 @@ final class CategoryViewModel {
     
     func fetchCategories() async {
         do {
-            self.categories = try await categoryStore.fetchAllCategories()
+            categories = try await categoryStore.fetchAllCategories()
         } catch {
-            onError?("Ошибка при получении категорий: \(error.localizedDescription)")
+            coordinator?.handleError(CategoryError.failedToFetch)
         }
     }
-
+    
     func addCategory(_ categoryName: String) async {
         do {
             let newCategory = TrackerCategory(title: categoryName, trackers: [])
             try await categoryStore.addCategory(newCategory)
             await fetchCategories()
         } catch {
-            onError?("Ошибка при добавлении категории: \(error.localizedDescription)")
+            coordinator?.handleError(CategoryError.failedToAdd)
         }
     }
     
-    func deleteCategory(at index: Int) async {
-        let category = categories[index]
+    func deleteCategory(_ category: TrackerCategory) async {
         do {
             try await categoryStore.deleteCategory(category)
             await fetchCategories()
         } catch {
-            onError?("Ошибка при удалении категории: \(error)")
+            coordinator?.handleError(CategoryError.failedToDelete)
         }
     }
 
@@ -50,7 +47,57 @@ final class CategoryViewModel {
             try await categoryStore.renameCategory(from: category, to: newTitle)
             await fetchCategories()
         } catch {
-            onError?("Ошибка при редактировании категории: \(error.localizedDescription)")
+            coordinator?.handleError(CategoryError.failedToUpdate)
+        }
+    }
+    
+    // Метод, который дергает контроллер при выборе ячейки
+    func didSelectCategory(at index: Int) {
+        guard index < categories.count else { return }
+
+        let selectedCategory = categories[index]
+        let categoryName = selectedCategory.title
+        coordinator?.didSelectCategory(categoryName)
+    }
+}
+
+extension CategoryViewModel: CategoryControllerDelegate {
+    func didTapAddCategoryButton() {
+        coordinator?.showCreateCategory()
+    }
+    
+    func didSelectCategory(_ category: TrackerCategory) {
+        coordinator?.didSelectCategory(category.title)
+    }
+    
+    func didTapEditCategory(_ category: TrackerCategory) {
+        coordinator?.showEditCategory(for: category)
+    }
+    
+    func didTapDeleteCategory(_ category: TrackerCategory) {
+        coordinator?.didTapDeleteCategory(category)
+    }
+}
+
+enum CategoryError: LocalizedError {
+    case failedToAdd
+    case failedToDelete
+    case failedToRename
+    case failedToUpdate
+    case failedToFetch
+    
+    var errorDescription: String? {
+        switch self {
+        case .failedToAdd:
+            return "Не удалось добавить категорию. Попробуйте ещё раз."
+        case .failedToDelete:
+            return "Не удалось удалить категорию. Попробуйте позже."
+        case .failedToRename:
+            return "Не удалось переименовать категорию."
+        case .failedToUpdate:
+            return "Не удалось обновить категории."
+        case .failedToFetch:
+            return "Не удалось загрузить категории."
         }
     }
 }

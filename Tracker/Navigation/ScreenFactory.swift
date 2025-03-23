@@ -8,11 +8,12 @@ final class ScreenFactory {
         self.dependencies = dependencies
     }
     
-    func makeTrackersScreen(delegate: TrackersViewControllerDelegate?) -> TrackersViewController {
+    func makeTrackersScreen(delegate: TrackersViewControllerDelegate?, coordinator: Coordinator?) -> TrackersViewController {
         let viewModel = TrackersViewModel(
             trackerStore: dependencies.trackerStore,
             categoryStore: dependencies.categoryStore
         )
+        viewModel.coordinator = coordinator as? TrackersCoordinator
         let viewController = TrackersViewController(viewModel: viewModel)
         viewController.delegate = delegate
         return viewController
@@ -21,6 +22,8 @@ final class ScreenFactory {
     func makeCreateTrackerScreen(delegate: CreateTrackerControllerDelegate) -> CreateTrackerController {
         let controller = CreateTrackerController(categoryStore: dependencies.categoryStore)
         controller.delegate = delegate
+        
+        controller.navigationDelegate = delegate as? CreateTrackerControllerNavigationDelegate
         return controller
     }
     
@@ -31,21 +34,34 @@ final class ScreenFactory {
         return controller
     }
     
-    func makeCreateCategoryScreen(editableCategory: TrackerCategory?) -> CreateCategoryViewController {
+    
+    func makeCreateCategoryScreen(
+        editableCategory: TrackerCategory?,
+        coordinator: CreateCategoryCoordinator
+    ) -> CreateCategoryViewController {
         let viewModel = CreateCategoryViewModel(editableCategory: editableCategory)
-        return CreateCategoryViewController(viewModel: viewModel)
+        viewModel.coordinator = coordinator
+        let createCategoryVC = CreateCategoryViewController(viewModel: viewModel)
+        return createCategoryVC
     }
     
-    func makeCategoryScreen(
-        viewModel: CategoryViewModel,
-        onCategorySelected: @escaping (String) -> Void,
-        onAddCategoryTapped: @escaping () -> Void,
-        onCategoryCreated: @escaping (String) -> Void
-    ) -> CategoryViewController {
+    func makeCategoryScreen(coordinator: CategoryCoordinator) -> CategoryViewController {
+        let viewModel = CategoryViewModel(categoryStore: dependencies.categoryStore)
+        viewModel.coordinator = coordinator
         let categoryVC = CategoryViewController(viewModel: viewModel)
-        categoryVC.onCategorySelected = onCategorySelected
-        categoryVC.onAddCategoryTapped = onAddCategoryTapped
-        categoryVC.onCategoryCreated = onCategoryCreated
+        categoryVC.delegate = viewModel
         return categoryVC
+    }
+    
+    func makeScheduleScreen(
+        selectedDays: Set<Weekday>,
+        delegate: ScheduleViewControllerDelegate?,
+        coordinator: ScheduleCoordinator
+    ) -> ScheduleViewController {
+        let viewModel = ScheduleViewModel(initialSelectedDays: selectedDays) 
+        viewModel.coordinator = coordinator
+        let scheduleVC = ScheduleViewController(viewModel: viewModel)
+        scheduleVC.scheduleDelegate = delegate
+        return scheduleVC
     }
 }

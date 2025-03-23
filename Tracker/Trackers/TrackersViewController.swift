@@ -67,7 +67,7 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
 
         setupNavBar()
         setupUI()
-        setupBindings()
+        //setupBindings()
         updateTheme()
         
         Task {
@@ -78,25 +78,6 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
         datePicker.overrideUserInterfaceStyle = .light
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
         }
-
-    // MARK: - Setup Methods
-    private func setupBindings() {
-        viewModel.onDataUpdated = { [weak self] in
-            DispatchQueue.main.async {
-                self?.collectionView.reloadData()
-                let isContentAvailable = !(self?.viewModel.filteredCategories.isEmpty ?? true)
-                self?.updateScrollViewState(isContentAvailable: isContentAvailable)
-            }
-        }
-
-        viewModel.onError = { [weak self] errorMessage in
-            DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Ошибка", message: errorMessage, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self?.present(alert, animated: true, completion: nil)
-            }
-        }
-    }
 
     private func setupUI() {
         [placeholderImage, labelImage, collectionView, filterButton].forEach {
@@ -152,18 +133,26 @@ final class TrackersViewController: UIViewController, CreateTrackerControllerDel
     }
     
     @objc private func addButtonTapped() {
+        print("🟢 addButtonTapped. delegate = \(String(describing: delegate))")
         delegate?.showCreateTracker(delegate: self)
     }
     
     @objc private func dateChanged() {
+        print("🟢 dateChanged() вызван, дата: \(datePicker.date)")
         viewModel.updateDate(datePicker.date)
     }
 
-    private func updateScrollViewState(isContentAvailable: Bool) {
+   func updateScrollViewState(isContentAvailable: Bool) {
         collectionView.isHidden = !isContentAvailable
         placeholderImage.isHidden = isContentAvailable
         labelImage.isHidden = isContentAvailable
     }
+    
+    func reloadScreen() {
+        collectionView.reloadData()
+        let isContentAvailable = !viewModel.filteredCategories.isEmpty
+        updateScrollViewState(isContentAvailable: isContentAvailable)
+        }
     
     // Пока не реализуем 
     func presentEditTrackerScreen(for tracker: Tracker) {

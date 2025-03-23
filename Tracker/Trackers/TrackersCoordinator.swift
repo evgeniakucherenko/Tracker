@@ -1,14 +1,14 @@
 import Foundation
 import UIKit
 
-// Этот класс отвечает за навигацию внутри экрана трекеров (TrackersViewController), а также за открытие экранов создания трекера (CreateTrackerCoordinator) и фильтрации (TrackersFilteringCoordinator)
-
 final class TrackersCoordinator: BaseCoordinator, TrackersViewControllerDelegate {
-    private let dependencies: CoordinatorDependencies // хранилище всех зависимостей
+    
+    private let dependencies: CoordinatorDependencies
+    private let screenFactory: ScreenFactory
     private weak var delegate: TrackersViewControllerDelegate?
-    private let screenFactory: ScreenFactory // отвечает за создание экранов
-    weak var filteringCoordinator: TrackersFilteringCoordinator? //  хранит координатор фильтрации
-
+    private weak var filteringCoordinator: TrackersFilteringCoordinator?
+    private var context: TrackersViewController?
+   
     init(navigationController: UINavigationController,
          dependencies: CoordinatorDependencies,
          screenFactory: ScreenFactory) {
@@ -21,13 +21,28 @@ final class TrackersCoordinator: BaseCoordinator, TrackersViewControllerDelegate
     override func start() {
         print("🟢 TrackersCoordinator подключился")
 
-        let viewController = screenFactory.makeTrackersScreen(delegate: self)
+        let viewController = screenFactory.makeTrackersScreen(delegate: self, coordinator: self)
+        
+        context = viewController
         navigationController.pushViewController(viewController, animated: false)
+    }
+    
+    func showAlert(title: String?, message: String?) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        context?.present(alert, animated: true, completion: nil)
+    }
+    
+    func reloadTrackersScreen() {
+        DispatchQueue.main.async {
+            print("🟢 TrackersCoordinator: обновление данных")
+            self.context?.reloadScreen()
+        }
     }
     
     // Открытие экрана создания трекера
     func showCreateTracker(delegate: CreateTrackerControllerDelegate) {
-        print("🟢 TrackersCoordinator: showCreateTracker")
+        print("🟢 TrackersCoordinator: showCreateTracker, delegate = \(String(describing: delegate))")
 
         let createTrackerCoordinator = CreateTrackerCoordinator(
             navigationController: navigationController,
@@ -37,7 +52,6 @@ final class TrackersCoordinator: BaseCoordinator, TrackersViewControllerDelegate
 
         createTrackerCoordinator.delegate = delegate
         self.childCoordinators.append(createTrackerCoordinator)
-
         createTrackerCoordinator.start()
     }
 }

@@ -1,73 +1,117 @@
 import UIKit
 
 final class CategoryCoordinator: BaseCoordinator {
-    
+
     private let dependencies: CoordinatorDependencies
     private let screenFactory: ScreenFactory
-    var onCategorySelected: ((String) -> Void)? 
 
+    private var context: CategoryViewController?
+    weak var habitsController: HabitsController?
+    
     init(
         navigationController: UINavigationController,
         dependencies: CoordinatorDependencies,
-        screenFactory: ScreenFactory,
-        onCategorySelected: @escaping (String) -> Void
+        screenFactory: ScreenFactory
     ) {
         self.dependencies = dependencies
         self.screenFactory = screenFactory
-        self.onCategorySelected = onCategorySelected
         super.init(navigationController: navigationController)
     }
     
     override func start() {
-        let viewModel = CategoryViewModel(categoryStore: dependencies.categoryStore)
-        
-        let categoryVC = screenFactory.makeCategoryScreen(
-            viewModel: viewModel,
-            onCategorySelected: { [weak self] category in
-                print("📌 Выбрана категория: \(category)")
-                self?.onCategorySelected?(category) // Передаем категорию обратно
-                self?.goBack()
-            },
-            onAddCategoryTapped: { [weak self] in
-                self?.showCreateCategory()
-            },
-            onCategoryCreated: { [weak self] newCategory in
-                Task {
-                    await viewModel.addCategory(newCategory)
-                    await viewModel.fetchCategories()
-                }
-            }
-        )
+        print("🟢 CategoryCoordinator: start() вызван")
 
-        categoryVC.coordinator = self
+        let categoryVC = screenFactory.makeCategoryScreen(coordinator: self)
+        context = categoryVC
         show(categoryVC)
     }
     
-    private func showCreateCategory() {
+    // Методы, которые будет вызывать ViewModel
+    func updateCategoryScreen(with categories: [TrackerCategory]) {
+        context?.updateTableView(with: categories)
+    }
+
+    func didSelectCategory(_ categoryName: String) {
+        print("🟢 CategoryCoordinator: didSelectCategory = \(categoryName)")
+        habitsController?.didSelectCategory(categoryName)
+        closeCategoryScreen()
+    }
+    
+    func closeCategoryScreen() {
+        context?.dismiss(animated: true)
+    }
+    
+    func showCreateCategory() {
+        print("🟢 CategoryCoordinator: showCreateCategory() called")
         let createCategoryCoordinator = CreateCategoryCoordinator(
             navigationController: navigationController,
             dependencies: dependencies,
             screenFactory: screenFactory
         )
 
-        createCategoryCoordinator.onCategoryCreated = { [weak self] newCategory in
-            print("🟢 Новая категория создана: \(newCategory)")
-            self?.goBack()
-        }
-
+        createCategoryCoordinator.categoryController = context
         childCoordinators.append(createCategoryCoordinator)
         createCategoryCoordinator.start()
     }
+    
+    func showEditCategory(for category: TrackerCategory) {
+        print("🟢 CategoryCoordinator: showEditCategory(for: \(category.title))")
 
-    private func goBack() {
-        if let navController = getTopNavigationController(), navController.viewControllers.count > 1 {
-            navController.popViewController(animated: true)
-        } else {
-            dismiss()
-        }
+        let editCategoryCoordinator = CreateCategoryCoordinator(
+            navigationController: navigationController,
+            dependencies: dependencies,
+            screenFactory: screenFactory
+        )
+        
+        editCategoryCoordinator.categoryController = context
+        editCategoryCoordinator.editableCategory = category
+        childCoordinators.append(editCategoryCoordinator)
+        editCategoryCoordinator.start()
     }
 
-    private func dismiss() {
-        getTopNavigationController()?.dismiss(animated: true)
+    func handleError(_ error: Error) {
+        print("🛑 CategoryCoordinator: ошибка — \(error.localizedDescription)")
+        showErrorAlert(error.localizedDescription)
     }
 }
+
+extension CategoryCoordinator {
+    
+    private func showErrorAlert(_ message: String) {
+        let alert = UIAlertController(
+            title: "Ошибка",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        context?.present(alert, animated: true)
+    }
+    
+    func didTapDeleteCategory(_ category: TrackerCategory) {
+        print("🟢 CategoryCoordinator: didTapDeleteCategory(\(category.title))")
+
+        let alert = UIAlertController(
+            title: "Удалить категорию?",
+            message: "Вы уверены, что хотите удалить «\(category.title)»?\nЭто действие нельзя отменить.",
+            preferredStyle: .alert
+        )
+
+        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            print("🟢 CategoryCoordinator: подтверждено удаление \(category.title)")
+
+            Task {
+                await self.context?.viewModel.deleteCategory(category)
+            }
+        }
+
+
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
+
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+
+        context?.present(alert, animated: true)
+    }
+}
+

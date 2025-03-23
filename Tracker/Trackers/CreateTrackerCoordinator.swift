@@ -7,80 +7,60 @@ protocol CreateTrackerControllerNavigationDelegate: AnyObject {
 }
 
 final class CreateTrackerCoordinator: BaseCoordinator {
-
     private let dependencies: CoordinatorDependencies
-    weak var delegate: CreateTrackerControllerDelegate?
-    
-    private var habitsCoordinator: HabitsControllerCoordinator? // Нужно убрать это свойство?
     private let screenFactory: ScreenFactory
+    
+    weak var delegate: CreateTrackerControllerDelegate?
+    weak var context: CreateTrackerController?
     
     init(navigationController: UINavigationController,
          dependencies: CoordinatorDependencies,
          screenFactory: ScreenFactory) {
         
         self.dependencies = dependencies
-        self.screenFactory = screenFactory 
-        
+        self.screenFactory = screenFactory
         super.init(navigationController: navigationController)
     }
     
     override func start() {
-        print("🟢 CreateTrackerCoordinator включился")
-
-        let controller = CreateTrackerController(categoryStore: dependencies.categoryStore)
-        controller.navigationDelegate = self 
-        controller.delegate = delegate
-
-        let navController = UINavigationController(rootViewController: controller)
-        navController.modalPresentationStyle = .formSheet
-        navigationController.present(navController, animated: true)
+        print("🟢 CreateTrackerCoordinator.start() вызван. delegate = \(String(describing: delegate))")
+        
+        let createTrackerVC = screenFactory.makeCreateTrackerScreen(delegate: self)
+        context = createTrackerVC
+        show(createTrackerVC)
     }
+}
 
-
+extension CreateTrackerCoordinator: CreateTrackerControllerDelegate {
     func startHabitsFlow() {
         print("🟢 Координатор CreateTrackerCoordinator: startHabitsFlow")
-
-        let categoryCoordinator = CategoryCoordinator(
-            navigationController: navigationController,
-            dependencies: dependencies,
-            screenFactory: screenFactory,
-            onCategorySelected: { [weak self] selectedCategory in
-                print("✅ Выбрана категория: \(selectedCategory)")
-                self?.habitsCoordinator?.handleSelectedCategory(selectedCategory)
-            }
-        )
 
         let habitsCoordinator = HabitsControllerCoordinator(
             navigationController: navigationController,
             dependencies: dependencies,
-            screenFactory: screenFactory,
-            categoryCoordinator: categoryCoordinator,
-            onCategorySelected: { selectedCategory in
-                print("🟢 HabitsControllerCoordinator получил категорию: \(selectedCategory)")
-            }
+            screenFactory: screenFactory
         )
-
-        self.habitsCoordinator = habitsCoordinator
-
-        let habitsController = screenFactory.makeHabitsScreen(navigationDelegate: habitsCoordinator)
-        show(habitsController, asModal: false)
+        
+        habitsCoordinator.createHabitsDelegate = context
+        childCoordinators.append(habitsCoordinator)
         habitsCoordinator.start()
     }
-
+    
     // Пока не реализовываем
-    func showIrregularEvent(delegate: IrregularEventControllerDelegate?) { // с этим пока не работаю
-        
+    func showIrregularEvent(delegate: IrregularEventControllerDelegate?) {
         print("🟢 Координатор CreateTrackerCoordinator: showIrregularEvent")
-        
-        let viewModel = IrregularEventViewModel(categoryStore: dependencies.categoryStore)
-        let controller = IrregularEventController(viewModel: viewModel)
-        controller.irregularEventDelegate = delegate
-        
-        let navController = UINavigationController(rootViewController: controller)
-        
-        let targetController = navigationController.presentedViewController ?? navigationController
-        targetController.present(navController, animated: true)
     }
 }
 
-extension CreateTrackerCoordinator: CreateTrackerControllerNavigationDelegate {}
+extension CreateTrackerCoordinator: CreateTrackerControllerNavigationDelegate {
+    func didCreateTracker(_ tracker: Tracker, inCategory category: String) async {
+        print("🟢 CreateTrackerCoordinator: Создан трекер \(tracker) в категории \(category)")
+        await (navigationController.viewControllers.first as? TrackersViewController)?
+                .didCreateTracker(tracker, inCategory: category)
+       }
+    
+    // Пока не реализовываем
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) async {
+        print("")
+    }
+}

@@ -1,65 +1,76 @@
 import UIKit
 
-final class HabitsControllerCoordinator: BaseCoordinator, HabitsNavigationDelegate {
-    
+protocol HabitsNavigationDelegate: AnyObject {
+    func showCategoryScreen()
+    func showScheduleScreen(currentlySelectedDays: Set<Weekday>)
+}
+
+final class HabitsControllerCoordinator: BaseCoordinator {
+  
     private let dependencies: CoordinatorDependencies
     private let screenFactory: ScreenFactory
+    
     private var categoryCoordinator: CategoryCoordinator?
-    var onCategorySelected: ((String) -> Void)?
+    private var scheduleCoordinator: ScheduleCoordinator?
     
-    private var habitsController: HabitsController?
-    
+    weak var createHabitsDelegate: CreateHabitsControllerDelegate?
+    weak var context: HabitsController?
+
     init(
-            navigationController: UINavigationController,
-            dependencies: CoordinatorDependencies,
-            screenFactory: ScreenFactory,
-            categoryCoordinator: CategoryCoordinator? = nil,
-            onCategorySelected: @escaping (String) -> Void
-        ) {
-            self.dependencies = dependencies
-            self.screenFactory = screenFactory
-            self.categoryCoordinator = categoryCoordinator 
-            self.onCategorySelected = onCategorySelected
-            super.init(navigationController: navigationController)
-        }
+        navigationController: UINavigationController,
+        dependencies: CoordinatorDependencies,
+        screenFactory: ScreenFactory
+    ) {
+        self.dependencies = dependencies
+        self.screenFactory = screenFactory
+        super.init(navigationController: navigationController)
+    }
     
-    // Где лучше создавать HabitsController? Сейчас создается в CreateTrackerController 
     override func start() {
         print("🟢 HabitsControllerCoordinator.start() вызван")
-    }
-    
-    func showCategoryScreen() {
-        print("🟢 HabitsControllerCoordinator: showCategoryScreen вызван")
-
-        let categoryCoordinator = CategoryCoordinator(
-            navigationController: navigationController,
-            dependencies: dependencies,
-            screenFactory: screenFactory,
-            onCategorySelected: { [weak self] selectedCategory in
-                print("🟢 Категория выбрана: \(selectedCategory)")
-                self?.handleSelectedCategory(selectedCategory)
-            }
-        )
-
-        self.categoryCoordinator = categoryCoordinator
-        categoryCoordinator.start() 
-    }
-    
-    func handleSelectedCategory(_ category: String) {
-        print("🟢 HabitsControllerCoordinator: обработка выбранной категории \(category)")
-
-        habitsController?.didSelectCategory(category)
-        navigationController.dismiss(animated: true)
-    }
-
-    func showScheduleScreen(currentlySelectedDays selectedDays: Set<Weekday>) {
-        print("🟢 HabitsControllerCoordinator: showScheduleScreen будет вызван")
+        
+        let habitVC = screenFactory.makeHabitsScreen(navigationDelegate: self)
+        habitVC.createHabitsDelegate = createHabitsDelegate 
+        context = habitVC
+        show(habitVC)
     }
 }
 
-extension HabitsControllerCoordinator: CategorySelectionDelegate {
+extension HabitsControllerCoordinator: HabitsNavigationDelegate {
+    func showCategoryScreen() {
+        print("🟢 HabitsControllerCoordinator: showCategoryScreen вызван")
+        let categoryCoordinator = CategoryCoordinator(
+            navigationController: navigationController,
+            dependencies: dependencies,
+            screenFactory: screenFactory
+        )
+        
+        categoryCoordinator.habitsController = context
+        childCoordinators.append(categoryCoordinator)
+        categoryCoordinator.start()
+    }
     
-    func didSelectCategory(_ category: String) {
-        print("🟢 HabitsControllerCoordinator: Выбрана категория \(category)")
+    func showScheduleScreen(currentlySelectedDays: Set<Weekday>) {
+        print("🟢 HabitsControllerCoordinator: showScheduleScreen вызван с днями: \(currentlySelectedDays)")
+    
+        let scheduleCoordinator = ScheduleCoordinator(
+            navigationController: navigationController,
+            dependencies: dependencies,
+            screenFactory: screenFactory
+        )
+    
+        scheduleCoordinator.habitsController = context
+        childCoordinators.append(scheduleCoordinator)
+        scheduleCoordinator.start(selectedDays: currentlySelectedDays)
+    }
+}
+
+extension HabitsControllerCoordinator {
+    func updateScheduleButton(subtitle: String?) {
+        context?.scheduleButton.update(title: "Расписание", subtitle: subtitle)
+    }
+
+    func updateCategoryButton(subtitle: String?) {
+        context?.categoryButton.update(title: "Категория", subtitle: subtitle)
     }
 }

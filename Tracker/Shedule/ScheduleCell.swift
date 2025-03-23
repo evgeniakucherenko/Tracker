@@ -14,7 +14,7 @@ class ScheduleCell: UITableViewCell {
         return label
     }()
     
-    let switchControl: UISwitch = {
+    lazy var switchControl: UISwitch = {
         let switchControl = UISwitch()
         switchControl.onTintColor = .blueYP
         switchControl.thumbTintColor = .white
@@ -118,5 +118,3 @@ class ScheduleCell: UITableViewCell {
         onSwitchToggled?(sender.isOn)
     }
 }
-
-

@@ -1,6 +1,7 @@
 import UIKit
 
 final class TrackersViewModel {
+    
     // MARK: - Properties
     var categoryStore: TrackerCategoryStoreProtocol
     private let pinnedTrackersService: PinnedTrackersServiceProtocol
@@ -39,9 +40,17 @@ final class TrackersViewModel {
         return trackerStore
     }
 
-    var onDataUpdated: (() -> Void)?
-    var onError: ((String) -> Void)?
     var onDateChanged: ((Date) -> Void)?
+    
+    var coordinator: TrackersCoordinator?
+    
+    lazy var onError: ((String) -> Void)? = { [weak self] in
+        self?.coordinator?.showAlert(title: "Ошибка", message: $0)
+    }
+    
+    lazy var onDataUpdated: (() -> Void)? = { [weak self] in
+        self?.coordinator?.reloadTrackersScreen()
+    }
     
     private let weekdayMapping: [Int: Weekday] = [
         1: .sunday, 2: .monday, 3: .tuesday, 4: .wednesday,
@@ -121,7 +130,7 @@ final class TrackersViewModel {
     }
     
     private func updateFilteredCategories() {
-        filteredCategories = filteringService.filteredCategories(
+        let newFiltered = filteringService.filteredCategories(
             categories: categories,
             pinnedTrackers: pinnedTrackersService.pinnedTrackers,
             completedTrackers: completedTrackers,
@@ -129,10 +138,14 @@ final class TrackersViewModel {
             weekdayMapping: weekdayMapping,
             currentFilterIndex: currentFilterIndex
         )
+
+        filteredCategories = newFiltered
+        onDataUpdated?()
     }
     
     // MARK: - Public Methods
     func updateDate(_ date: Date) {
+        print("🟢 Дата изменилась: \(date)")
         currentDate = date
     }
     
@@ -151,7 +164,7 @@ final class TrackersViewModel {
             print("✅ TrackersViewModel: onDataUpdated вызван")
             onDataUpdated?()
         } catch {
-            onError?("Ошибка при добавлении трекера: \(error.localizedDescription)")
+             onError?("Ошибка при добавлении трекера: \(error.localizedDescription)")
         }
     }
 
@@ -214,19 +227,19 @@ final class TrackersViewModel {
         onDataUpdated?()
     }
     
-        func numberOfSections() -> Int {
-            return filteredCategories.count
-        }
+    func numberOfSections() -> Int {
+        return filteredCategories.count
+    }
     
-        func numberOfItems(in section: Int) -> Int {
-            guard section < filteredCategories.count else { return 0 }
-            return filteredCategories[section].trackers.count
-        }
+    func numberOfItems(in section: Int) -> Int {
+        guard section < filteredCategories.count else { return 0 }
+        return filteredCategories[section].trackers.count
+    }
     
-        func titleForSection(_ section: Int) -> String? {
-            guard section < filteredCategories.count else { return nil }
-            return filteredCategories[section].title
-        }
+    func titleForSection(_ section: Int) -> String? {
+        guard section < filteredCategories.count else { return nil }
+        return filteredCategories[section].title
+    }
 }
 
 extension TrackersViewModel {

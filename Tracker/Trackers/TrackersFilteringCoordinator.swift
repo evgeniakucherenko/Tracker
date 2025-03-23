@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 final class TrackersFilteringCoordinator: BaseCoordinator {
-    weak var delegate: TrackersFilteringCoordinatorDelegate? // объект, который получит результат выбора фильтра
+    weak var delegate: TrackersFilteringCoordinatorDelegate? 
     
     override func start() {
         print("🟢 TrackersFilteringCoordinator запущен")

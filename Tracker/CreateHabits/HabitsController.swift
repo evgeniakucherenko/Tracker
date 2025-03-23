@@ -1,12 +1,11 @@
 import UIKit
 
-final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
-                              CategorySelectionDelegate {
+final class HabitsController: BaseCreateTrackerController<HabitsViewModel> {
     
     weak var navigationDelegate: HabitsNavigationDelegate?
     weak var createHabitsDelegate: CreateHabitsControllerDelegate?
     
-    private lazy var categoryButton: CustomSelectionButton = {
+    lazy var categoryButton: CustomSelectionButton = {
         let category = NSLocalizedString("category", comment: "")
         let button = CustomSelectionButton(title: category)
         button.layer.cornerRadius = 16
@@ -15,7 +14,7 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
         return button
     }()
 
-    private lazy var scheduleButton: CustomSelectionButton = {
+    lazy var scheduleButton: CustomSelectionButton = {
         let schedule = NSLocalizedString("schedule", comment: "")
         let button = CustomSelectionButton(title: schedule)
         button.layer.cornerRadius = 16
@@ -79,26 +78,9 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
         ])
     }
 
-    override func bindBaseViewModel() {
-        super.bindBaseViewModel()
-
-        viewModel.onCategoryButtonSubtitleChanged = { [weak self] subtitle in
-            guard let self = self else { return }
-            self.categoryButton.update(title: "Категория", subtitle: subtitle)
-        }
-
-        viewModel.onScheduleButtonSubtitleChanged = { [weak self] subtitle in
-            guard let self = self else { return }
-            if let subtitle = subtitle, !subtitle.isEmpty {
-                self.scheduleButton.update(title: "Расписание", subtitle: subtitle)
-            } else {
-                self.scheduleButton.update(title: "Расписание")
-            }
-        }
-    }
-
     override func handleCreateTracker(tracker: Tracker, category: String) {
         Task {
+            print("🟢 HabitsController: Создаем трекер \(tracker), категория: \(category)")
             await createHabitsDelegate?.didCreateTracker(tracker, inCategory: category)
             closeModalAndSwitchToTab(index: 0)
         }
@@ -112,10 +94,20 @@ final class HabitsController: BaseCreateTrackerController<HabitsViewModel>,
         navigationDelegate?.showScheduleScreen(currentlySelectedDays: viewModel.selectedDays)
     }
 
-    // MARK: - CategorySelectionDelegate
     func didSelectCategory(_ categoryName: String) {
         print("🟢 HabitsController: выбрана категория \(categoryName)")
         viewModel.selectCategory(categoryName)
         categoryButton.update(title: "Категория", subtitle: categoryName)
+    }
+    
+    func updateSelectedSchedule(days: Set<Weekday>) {
+        print("🟢 HabitsController: обновляем расписание \(days)")
+
+        viewModel.selectedDays = days  
+        let formattedDays = days.map { $0.shortName }.joined(separator: ", ")
+
+        DispatchQueue.main.async { [weak self] in
+            self?.scheduleButton.update(title: "Расписание", subtitle: formattedDays)
+        }
     }
 }

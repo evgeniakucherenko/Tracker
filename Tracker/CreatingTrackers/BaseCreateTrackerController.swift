@@ -3,10 +3,7 @@ import UIKit
 class BaseCreateTrackerController<ViewModelType: BaseCreateTrackerViewModel>: UIViewController, UITextFieldDelegate {
     // MARK: - Properties
     var viewModel: ViewModelType
-
-    weak var categorySelectionDelegate: CategorySelectionDelegate?
     var coordinator: TrackersCoordinator?
-
     let scrollView = UIScrollView()
     let contentView = UIView()
 

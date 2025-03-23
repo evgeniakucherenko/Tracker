@@ -5,10 +5,6 @@ protocol CategoryCreationDelegate: AnyObject {
     func didCreateCategory(_ categoryName: String)
 }
 
-protocol CategorySelectionDelegate: AnyObject {
-    func didSelectCategory(_ categoryName: String)
-}
-
 // Трекеры
 protocol CreateHabitsControllerDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, inCategory category: String) async

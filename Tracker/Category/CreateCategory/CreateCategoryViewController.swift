@@ -3,10 +3,7 @@ import Foundation
 import UIKit
 
 final class CreateCategoryViewController: UIViewController {
-
-    // MARK: - Properties
     private var viewModel: CreateCategoryViewModel
-    weak var delegate: CreateCategoryViewControllerDelegate?
 
     //MARK: - UI Elements
     private lazy var categoryTextField: CustomTextField = {
@@ -45,8 +42,13 @@ final class CreateCategoryViewController: UIViewController {
         setupNavBar()
         setupViews()
         setupConstraints()
-        bindViewModel()
         updateTheme()
+        
+        // Если есть editableCategory, заполняем поле
+        if let cat = viewModel.editableCategory {
+            categoryTextField.text = cat.title
+            doneButton.isEnabled = true
+        }
     }
 
     private func setupNavBar() {
@@ -75,21 +77,18 @@ final class CreateCategoryViewController: UIViewController {
         ])
     }
 
-    private func bindViewModel() {
-        viewModel.onValidationChange = { [weak self] isValid in
-            self?.doneButton.isEnabled = isValid
-        }
-    }
-
     @objc private func updateTheme() {
         view.backgroundColor = ColorPalette.backgroundColor
+    }
+    
+    // MARK: - Public UI Update Method
+    func updateDoneButtonState(_ isEnabled: Bool) {
+        doneButton.isEnabled = isEnabled
     }
 
     // MARK: - Actions
     @objc private func doneButtonTapped() {
-        guard let categoryName = categoryTextField.text else { return }
-        viewModel.createCategory(categoryName)
-        delegate?.didCreateCategory(name: categoryName)
+        viewModel.createOrUpdateCategory(categoryTextField.text ?? "")
     }
 
     @objc private func textFieldDidChange(_ textField: UITextField) {

@@ -89,7 +89,6 @@ final class CreateTrackerController: UIViewController {
 extension CreateTrackerController: CreateHabitsControllerDelegate & IrregularEventControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, inCategory category: String) async {
         print("✅ CreateTrackerController: didCreateTracker вызван")
-        print("📌 Перед вызовом делегата: delegate = \(String(describing: delegate))")
         
         await delegate?.didCreateTracker(tracker, inCategory: category)
         dismiss(animated: true, completion: nil)
