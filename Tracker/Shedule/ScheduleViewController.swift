@@ -1,17 +1,18 @@
 import UIKit
 
 final class ScheduleViewController: ThemedViewController {
-
+    
     // MARK: - Properties
     weak var scheduleDelegate: ScheduleViewControllerDelegate?
     var viewModel: ScheduleViewModel
 
-    //MARK: - UI Elements
+    // MARK: - UI Elements
     private let tableView = UITableView()
 
     private lazy var doneButton: CustomButton = {
         let doneButton = NSLocalizedString("done", comment: "Готово")
         let button = CustomButton(title: doneButton)
+        button.isEnabled = false
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -20,20 +21,18 @@ final class ScheduleViewController: ThemedViewController {
     init(viewModel: ScheduleViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
-        bindViewModel()
-        viewModel.onDaysUpdated?(viewModel.selectedDays)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func updateTheme() {
         super.updateTheme()
         view.backgroundColor = ColorPalette.backgroundColor
     }
 
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -41,7 +40,6 @@ final class ScheduleViewController: ThemedViewController {
         setupViews()
         setupConstraints()
         setupTableView()
-        bindViewModel()
         updateTheme()
     }
 
@@ -79,17 +77,50 @@ final class ScheduleViewController: ThemedViewController {
         tableView.register(ScheduleCell.self, forCellReuseIdentifier: ScheduleCell.reuseIdentifier)
     }
 
-    // MARK: - ViewModel Binding
-    private func bindViewModel() {
-        viewModel.onDaysUpdated = { [weak self] selectedDays in
-            self?.tableView.reloadData()
-            self?.doneButton.isEnabled = !selectedDays.isEmpty
-        }
+    // MARK: - Методы обновления UI, вызываемые Coordinator'ом
+    func updateTableView() {
+        self.tableView.reloadData()
     }
-    
+
+    func updateDoneButtonState(_ isEnabled: Bool) {
+        doneButton.isEnabled = isEnabled
+    }
+
     // MARK: - Actions
     @objc private func doneButtonTapped() {
         scheduleDelegate?.didSelect(days: viewModel.selectedDays)
         dismiss(animated: true, completion: nil)
     }
 }
+
+// MARK: - UITableViewDataSource, UITableViewDelegate
+extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return viewModel.numberOfDays
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as? ScheduleCell else {
+            return UITableViewCell()
+        }
+
+        let weekday = viewModel.getDay(at: indexPath.row)
+        let isSelected = viewModel.isDaySelected(at: indexPath.row)
+        let isFirst = indexPath.row == 0
+        let isLast = indexPath.row == viewModel.numberOfDays - 1
+
+        cell.configure(with: weekday, isSelected: isSelected, isFirst: isFirst, isLast: isLast)
+
+        cell.onSwitchToggled = { [weak self] _ in
+            self?.viewModel.toggleDay(weekday)
+        }
+        
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 75
+    }
+}
+

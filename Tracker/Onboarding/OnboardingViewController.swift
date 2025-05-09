@@ -129,7 +129,7 @@ final class OnboardingViewController: UIViewController,
         UserDefaults.standard.set(true, forKey: "onboardingCompleted")
         
         if let window = view.window {
-            let mainViewController = TabBarController()
+            let mainViewController = CustomTabBarController()
             window.rootViewController = mainViewController
             window.makeKeyAndVisible()
         } else {

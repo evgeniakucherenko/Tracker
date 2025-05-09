@@ -1,6 +1,11 @@
 import UIKit
 
-final class IrregularEventController: BaseCreateTrackerController<IrregularEventViewModel>, CategorySelectionDelegate {
+final class IrregularEventController: BaseCreateTrackerController<IrregularEventViewModel> {
+    
+    func didSelectCategory(_ category: TrackerCategory) {
+        print("")
+    }
+    
     weak var irregularEventDelegate: IrregularEventControllerDelegate?
 
     private lazy var categoryButton: CustomSelectionButton = {
@@ -51,16 +56,18 @@ final class IrregularEventController: BaseCreateTrackerController<IrregularEvent
             self.categoryButton.update(title: "Категория", subtitle: subtitle)
         }
     }
-
+    
     override func handleCreateTracker(tracker: Tracker, category: String) {
-        irregularEventDelegate?.didCreateIrregularEvent(tracker, inCategory: category)
-        closeModalAndSwitchToTab(index: 0)
+        Task {
+            await irregularEventDelegate?.didCreateIrregularEvent(tracker, inCategory: category)
+            closeModalAndSwitchToTab(index: 0)
+        }
     }
 
     @objc private func categoryButtonTapped() {
         let categoryViewModel = CategoryViewModel(categoryStore: viewModel.categoryStoreRef)
         let categoryViewController = CategoryViewController(viewModel: categoryViewModel)
-        categoryViewController.delegate = self
+        //categoryViewController.delegate = self
 
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet

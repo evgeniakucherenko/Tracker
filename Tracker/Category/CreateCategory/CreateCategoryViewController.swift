@@ -3,32 +3,30 @@ import Foundation
 import UIKit
 
 final class CreateCategoryViewController: UIViewController {
-
-    // MARK: - Properties
     private var viewModel: CreateCategoryViewModel
-    var onCategoryCreated: ((TrackerCategory) -> Void)?
-    var onCategoryUpdated: ((TrackerCategory) -> Void)?
-    private var editableCategory: TrackerCategory?
 
     //MARK: - UI Elements
     private lazy var categoryTextField: CustomTextField = {
         let textField = CustomTextField()
         textField.placeholder = NSLocalizedString("addCategoryName", comment: "")
-        textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        textField.addTarget(self,
+                            action: #selector(textFieldDidChange(_:)),
+                            for: .editingChanged)
         return textField
     }()
 
     private lazy var doneButton: CustomButton = {
         let button = CustomButton(title: NSLocalizedString("done", comment: ""))
         button.isEnabled = false
-        button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
+        button.addTarget(self,
+                         action: #selector(doneButtonTapped),
+                         for: .touchUpInside)
         return button
     }()
 
     // MARK: - Initializer
-    init(viewModel: CreateCategoryViewModel, editableCategory: TrackerCategory? = nil) {
+    init(viewModel: CreateCategoryViewModel) {
         self.viewModel = viewModel
-        self.editableCategory = editableCategory
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -44,16 +42,17 @@ final class CreateCategoryViewController: UIViewController {
         setupNavBar()
         setupViews()
         setupConstraints()
-        bindViewModel()
-        loadEditableCategory()
         updateTheme()
+        
+        // Если есть editableCategory, заполняем поле
+        if let cat = viewModel.editableCategory {
+            categoryTextField.text = cat.title
+            doneButton.isEnabled = true
+        }
     }
 
-    // MARK: - Setup Methods
     private func setupNavBar() {
-        let title = editableCategory == nil
-            ? NSLocalizedString("newCategory", comment: "")
-            : NSLocalizedString("editCategory", comment: "")
+        let title = NSLocalizedString("newCategory", comment: "")
         _ = TitlePopup(title: title, navigationItem: navigationItem)
     }
 
@@ -78,35 +77,18 @@ final class CreateCategoryViewController: UIViewController {
         ])
     }
 
-    private func bindViewModel() {
-        viewModel.onValidationChange = { [weak self] isValid in
-            self?.doneButton.isEnabled = isValid
-        }
-    }
-
-    private func loadEditableCategory() {
-        guard let editableCategory else { return }
-        categoryTextField.text = editableCategory.title
-        doneButton.isEnabled = true
-        viewModel.updateCategoryName(editableCategory.title)
-    }
-
     @objc private func updateTheme() {
         view.backgroundColor = ColorPalette.backgroundColor
+    }
+    
+    // MARK: - Public UI Update Method
+    func updateDoneButtonState(_ isEnabled: Bool) {
+        doneButton.isEnabled = isEnabled
     }
 
     // MARK: - Actions
     @objc private func doneButtonTapped() {
-        guard let categoryName = categoryTextField.text, !categoryName.isEmpty else { return }
-
-        if let editableCategory {
-            let updatedCategory = TrackerCategory(title: categoryName, trackers: editableCategory.trackers)
-            onCategoryUpdated?(updatedCategory)
-        } else {
-            let newCategory = viewModel.createCategory(named: categoryName)
-            onCategoryCreated?(newCategory)
-        }
-        dismiss(animated: true, completion: nil)
+        viewModel.createOrUpdateCategory(categoryTextField.text ?? "")
     }
 
     @objc private func textFieldDidChange(_ textField: UITextField) {

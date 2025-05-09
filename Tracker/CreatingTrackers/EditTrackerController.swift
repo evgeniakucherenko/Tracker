@@ -34,11 +34,19 @@ final class EditTrackerController: UIViewController {
             action: #selector(createButtonTapped),
             target: self
         )
-        button.setEnabled(viewModel.hasChanges, enabledColor: UIColor.systemBlue, disabledColor: .grayColorYP)
+        
+        Task {
+            let hasChanges = await viewModel.hasChanges
+            button.setEnabled(
+                hasChanges,
+                enabledColor: UIColor.systemBlue,
+                disabledColor: .grayColorYP
+            )
+        }
+        
         return button
     }()
-    
-    
+
     private lazy var nameTextField: CustomTextField = {
         let textField = CustomTextField()
         let trackerNameTextField = NSLocalizedString("trackerNameTextField", comment: "")
@@ -172,11 +180,13 @@ final class EditTrackerController: UIViewController {
     
     // MARK: - Actions
     @objc private func createButtonTapped() {
-        do {
-            let updatedTracker = try viewModel.saveChanges()
-            closeModalAndSwitchToTab(index: 0)
-        } catch {
-            print("Ошибка при сохранении изменений трекера: \(error.localizedDescription)")
+        Task {
+            do {
+                let updatedTracker = try await viewModel.saveChanges()
+                closeModalAndSwitchToTab(index: 0)
+            } catch {
+                print("Ошибка при сохранении изменений трекера: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -187,19 +197,21 @@ final class EditTrackerController: UIViewController {
     @objc private func categoryButtonTapped() {
         let categoryViewModel = CategoryViewModel(categoryStore: viewModel.categoryStoreRef)
         let categoryViewController = CategoryViewController(viewModel: categoryViewModel)
-        categoryViewController.delegate = self
+        //categoryViewController.delegate = self
         let navController = UINavigationController(rootViewController: categoryViewController)
         navController.modalPresentationStyle = .formSheet
         present(navController, animated: true)
     }
     
     @objc private func scheduleButtonTapped() {
-        let viewModel = ScheduleViewModel(initialSelectedDays: viewModel.selectedSchedule)
-        let scheduleViewController = ScheduleViewController(viewModel: viewModel)
-        scheduleViewController.scheduleDelegate = self
-        let navController = UINavigationController(rootViewController: scheduleViewController)
-        navController.modalPresentationStyle = .formSheet
-        present(navController, animated: true, completion: nil)
+        
+        print("")
+//        let viewModel = ScheduleViewModel(initialSelectedDays: viewModel.selectedSchedule)
+//        let scheduleViewController = ScheduleViewController(viewModel: viewModel)
+//        scheduleViewController.scheduleDelegate = self
+//        let navController = UINavigationController(rootViewController: scheduleViewController)
+//        navController.modalPresentationStyle = .formSheet
+//        present(navController, animated: true, completion: nil)
     }
 
     @objc private func hideKeyboard() {
@@ -210,7 +222,7 @@ final class EditTrackerController: UIViewController {
     private func closeModalAndSwitchToTab(index: Int) {
         guard let window = UIApplication.shared.windows.first else { return }
 
-        if let tabBarController = window.rootViewController as? TabBarController {
+        if let tabBarController = window.rootViewController as? CustomTabBarController {
             tabBarController.selectedIndex = index
         }
 
@@ -218,22 +230,15 @@ final class EditTrackerController: UIViewController {
     }
         
     private func validateInputs() {
-        let isValid = viewModel.hasChanges
-        createButton.isEnabled = isValid
-        createButton.backgroundColor = isValid ? .systemBlue : .grayColorYP
+        Task {
+            let isValid = await viewModel.hasChanges
+            createButton.isEnabled = isValid
+            createButton.backgroundColor = isValid ? .systemBlue : .gray
+        }
     }
-    
+
     @objc private func nameTextFieldChanged() {
         viewModel.name = nameTextField.text ?? ""
-        validateInputs()
-    }
-}
-
-
-extension EditTrackerController: CategorySelectionDelegate {
-    func didSelectCategory(_ categoryName: String) {
-        viewModel.selectedCategory = categoryName
-        categoryButton.update(title: "Категория", subtitle: categoryName)
         validateInputs()
     }
 }

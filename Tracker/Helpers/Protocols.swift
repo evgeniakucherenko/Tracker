@@ -5,24 +5,26 @@ protocol CategoryCreationDelegate: AnyObject {
     func didCreateCategory(_ categoryName: String)
 }
 
-protocol CategorySelectionDelegate: AnyObject {
-    func didSelectCategory(_ categoryName: String)
-}
-
 // Трекеры
 protocol CreateHabitsControllerDelegate: AnyObject {
-    func didCreateTracker(_ tracker: Tracker, inCategory category: String)
+    func didCreateTracker(_ tracker: Tracker, inCategory category: String) async
 }
 
 // Протокол для передачи информации о созданном нерегулярном событии
 protocol IrregularEventControllerDelegate: AnyObject {
-    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String)
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) async
 }
 
 // Протокол для передачи информации о созданном трекере
 protocol CreateTrackerControllerDelegate: AnyObject {
-    func didCreateTracker(_ tracker: Tracker, inCategory category: String)
-    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String)
+    func didCreateTracker(_ tracker: Tracker, inCategory category: String) async
+    func didCreateIrregularEvent(_ tracker: Tracker, inCategory category: String) async
+}
+
+protocol TrackersViewControllerDelegate: AnyObject {
+    func showCreateTracker(delegate: CreateTrackerControllerDelegate)
+    func showFilterScreen(delegate: TrackersFilteringCoordinatorDelegate)
+    func didSelectFilter(at index: Int)
 }
 
 // Расписание
@@ -32,15 +34,15 @@ protocol ScheduleViewControllerDelegate: AnyObject {
 
 // Протокол для работы с хранилищем трекеров.
 protocol TrackerStoreProtocol {
-    func fetchAllTrackers() throws -> [Tracker]
-    func addNewTracker(_ tracker: Tracker) throws
-    func fetchTracker(by id: UUID) throws -> Tracker?
-    func toggleTrackerCompletion(_ tracker: Tracker, on date: Date) throws
-    func getCompletionCount(for tracker: Tracker) throws -> Int
-    func fetchAllTrackerRecords() throws -> [TrackerRecord]
+    func fetchAllTrackers() async throws -> [Tracker]
+    func addNewTracker(_ tracker: Tracker) async throws
+    func fetchTracker(by id: UUID) async throws -> Tracker?
+    func toggleTrackerCompletion(_ tracker: Tracker, on date: Date) async throws
+    func getCompletionCount(for tracker: Tracker) async throws -> Int
+    func fetchAllTrackerRecords() async throws -> [TrackerRecord]
     func subscribeToChanges(_ onChange: @escaping () -> Void)
-    func updateTracker(_ tracker: Tracker) throws
-    func deleteTracker(_ tracker: Tracker) throws
+    func updateTracker(_ tracker: Tracker) async throws
+    func deleteTracker(_ tracker: Tracker) async throws
 }
 
 // Протокол для работы с хранилищем записей о выполненных трекерах.
@@ -51,14 +53,14 @@ protocol TrackerRecordStoreProtocol {
 
 // Протокол для работы с хранилищем категорий трекеров.
 protocol TrackerCategoryStoreProtocol {
-    func fetchAllCategories() throws -> [TrackerCategory]
-    func addCategory(_ category: TrackerCategory) throws
-    func deleteCategory(_ category: TrackerCategory) throws
-    func updateCategory(_ category: TrackerCategory) throws
-    func updateCategory(from oldCategory: TrackerCategory, to newCategoryTitle: String, tracker: Tracker?) throws
+    func fetchAllCategories() async throws -> [TrackerCategory]
+    func addCategory(_ category: TrackerCategory) async throws
+    func deleteCategory(_ category: TrackerCategory) async throws
+    func updateCategory(_ category: TrackerCategory) async throws
+    func updateCategory(from oldCategory: TrackerCategory, to newCategoryTitle: String, tracker: Tracker?) async throws
     func subscribeToChanges(_ onChange: @escaping () -> Void)
-    func fetchCategory(byTitle title: String) throws -> TrackerCategory?
-    func renameCategory(from oldCategory: TrackerCategory, to newCategoryTitle: String) throws
+    func fetchCategory(byTitle title: String) async throws -> TrackerCategory?
+    func renameCategory(from oldCategory: TrackerCategory, to newCategoryTitle: String) async throws
     }
 
 // Протокол для сервиса, управляющего закреплёнными трекерами.
@@ -91,16 +93,16 @@ protocol TrackerFilteringServiceProtocol {
 
 // Протокол для сервиса, отвечающего за доступ к данным о трекерах и категориях.
 protocol TrackerDataServiceProtocol {
-    func loadCategories() throws -> [TrackerCategory]
-    func loadCompletedTrackers(for date: Date) throws -> Set<UUID>
-    func addTracker(_ tracker: Tracker, to category: String) throws
-    func deleteTracker(_ tracker: Tracker) throws
-    func toggleTrackerCompletion(_ tracker: Tracker, on date: Date) throws
-    func updateCategory(_ category: TrackerCategory) throws
-    func addCategory(_ category: TrackerCategory) throws
-    func deleteCategory(_ category: TrackerCategory) throws
-    func getCompletionCount(for tracker: Tracker) throws -> Int
-    func addNewTracker(_ tracker: Tracker) throws
+    func loadCategories() async throws -> [TrackerCategory]
+    func loadCompletedTrackers(for date: Date) async throws -> Set<UUID>
+    func addTracker(_ tracker: Tracker, to category: String) async throws
+    func deleteTracker(_ tracker: Tracker) async throws
+    func toggleTrackerCompletion(_ tracker: Tracker, on date: Date) async throws
+    func updateCategory(_ category: TrackerCategory) async throws
+    func addCategory(_ category: TrackerCategory) async throws
+    func deleteCategory(_ category: TrackerCategory) async throws
+    func getCompletionCount(for tracker: Tracker) async throws -> Int
+    func addNewTracker(_ tracker: Tracker) async throws
 }
 
 // Протокол для сервиса, упрощающего работу с датами.

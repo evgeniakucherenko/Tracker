@@ -19,14 +19,14 @@ final class StatViewController: UIViewController {
     }()
     
     // MARK: - Initializer
-        init(trackerStore: TrackerStoreProtocol, trackerRecordStore: TrackerRecordStoreProtocol) {
-            self.viewModel = StatViewModel(trackerStore: trackerStore, trackerRecordStore: trackerRecordStore)
-            super.init(nibName: nil, bundle: nil)
-        }
-        
-        required init?(coder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
-        }
+    init(viewModel: StatViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -34,7 +34,9 @@ final class StatViewController: UIViewController {
         setupNavBar()
         setupUI()
         
-        viewModel.calculateStatistics()
+        Task {
+               await viewModel.calculateStatistics()
+           }
     }
     
     private func setupNavBar() {

@@ -2,11 +2,20 @@ import UIKit
 
 final class HabitsViewModel: BaseCreateTrackerViewModel {
     private var categoryStore: TrackerCategoryStoreProtocol
-    private var selectedDays: Set<Weekday> = []
+    var selectedDays: Set<Weekday> = []
+    var coordinator: HabitsControllerCoordinator?
 
-    init(categoryStore: TrackerCategoryStoreProtocol) {
+     init(categoryStore: TrackerCategoryStoreProtocol) {
         self.categoryStore = categoryStore
         super.init()
+
+        self.onCategoryButtonSubtitleChanged = { [weak self] subtitle in
+            self?.coordinator?.updateCategoryButton(subtitle: subtitle)
+        }
+    }
+    
+    lazy var onScheduleButtonSubtitleChanged: ((String?) -> Void)? = { [weak self] subtitle in
+        self?.coordinator?.updateScheduleButton(subtitle: subtitle)
     }
 
     func updateSelectedDays(_ days: Set<Weekday>) {
@@ -20,8 +29,6 @@ final class HabitsViewModel: BaseCreateTrackerViewModel {
         onScheduleButtonSubtitleChanged?(subtitle)
         validateForm()
     }
-
-    var onScheduleButtonSubtitleChanged: ((String?) -> Void)?
 
     override func validateForm() {
         super.validateForm()

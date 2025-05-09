@@ -99,7 +99,3 @@ extension TrackersFilteringController: UITableViewDataSource, UITableViewDelegat
         return 75
     }
 }
-
-
-
-

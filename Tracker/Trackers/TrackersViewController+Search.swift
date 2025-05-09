@@ -3,18 +3,22 @@ import UIKit
 
 // MARK: - Search Handling
 extension TrackersViewController: UISearchResultsUpdating {
-    
+
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text?.lowercased(), !query.isEmpty else {
-            viewModel.clearSearch()
-            collectionView.reloadData()
-            updatePlaceholder(isSearching: false)
+            Task {
+                await viewModel.clearSearch()
+                collectionView.reloadData()
+                updatePlaceholder(isSearching: false)
+            }
             return
         }
         
-        viewModel.filterTrackers(with: query)
-        collectionView.reloadData()
-        updatePlaceholder(isSearching: true)
+        Task {
+            await viewModel.filterTrackers(with: query)
+            collectionView.reloadData()
+            updatePlaceholder(isSearching: true)
+        }
     }
     
     // MARK: - Update Placeholder

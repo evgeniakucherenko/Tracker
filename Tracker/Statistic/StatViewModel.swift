@@ -23,23 +23,28 @@ final class StatViewModel {
     private(set) var averageValue: Int = 0
     
     // MARK: - Public Methods
-    func calculateStatistics() {
-        do {
-            let allTrackers = try trackerStore.fetchAllTrackers()
-            let allRecords = try trackerRecordStore.fetchAllTrackerRecords()
-            
-            bestPeriod = calculateBestPeriod(from: allRecords)
-            perfectDays = calculatePerfectDays(from: allTrackers, records: allRecords)
-            totalCompletedTrackers = allRecords.count
-            averageValue = calculateAverageValue(from: allTrackers, records: allRecords)
-        } catch {
-            print("Ошибка при расчете статистики: \(error.localizedDescription)")
+    func calculateStatistics() async {
+            do {
+                let allTrackers = try await trackerStore.fetchAllTrackers()
+                let allRecords = try await trackerRecordStore.fetchAllTrackerRecords()
+    
+                bestPeriod = calculateBestPeriod(from: allRecords)
+                perfectDays = calculatePerfectDays(from: allTrackers, records: allRecords)
+                totalCompletedTrackers = allRecords.count
+                averageValue = calculateAverageValue(from: allTrackers, records: allRecords)
+            } catch {
+                print("Ошибка при расчете статистики: \(error.localizedDescription)")
+            }
         }
-    }
 
     // MARK: - Private Methods
     private func calculateBestPeriod(from records: [TrackerRecord]) -> Int {
         let sortedDates = records.map { $0.date }.sorted()
+        
+        // ✅ Проверяем, что есть хотя бы 2 даты, иначе нет смысла вычислять
+           guard sortedDates.count > 1 else { return 0 }
+        
+        
         var bestPeriod = 0
         var currentPeriod = 1
 
